@@ -1,5 +1,5 @@
-# Group-N
-Repository for CS 442 Group N
+# Group-12
+Repository for CS 442 Group 12
 
 Note:  The presentation evaluation form and rubric are provided here for reference
        and planning purposes.  Hard copies will be handed out in class on 
