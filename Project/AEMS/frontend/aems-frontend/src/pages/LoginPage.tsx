@@ -4,14 +4,8 @@ import { Login } from '../components/Login'
 import { Box, Button } from "@mui/material"
 import { grey } from "@mui/material/colors"
 
-function LoginPage() {
-
-  return (
-    <>
-      <h1>AEMS</h1>
-      <Login />
-    </>
-  )
+export const LoginPage = () => {
+    return (
+        <Login />
+    )
 }
-
-export default LoginPage
