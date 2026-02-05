@@ -1,4 +1,4 @@
-#root {
+/* #root {
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -9,4 +9,140 @@ html, body, #root {
   height: 100%;
   margin: 0;
   width: 100%;
+} */
+
+.hero {
+  height: 100vh;
+  background-image: 
+    linear-gradient(rgba(0,0,0,0.55), rgba(0,0,0,0.75)),
+    url("assets/background_image.jpg"); 
+    
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  color: white;
+  position: relative;
+}
+
+/* NAVBAR */
+.nav {
+  display: flex;
+  justify-content: space-between;
+  padding: 30px 60px;
+  font-size: 18px;
+}
+
+.logo {
+  font-family: "Playfair Display", serif;
+  font-size: 26px;
+  letter-spacing: 2px;
+  color: #d4af37;
+}
+
+
+.nav-links a {
+  text-decoration: none;
+  color: #e8d8a8; /* soft gold */
+  cursor: pointer;
+}
+
+.nav-links a {
+  text-decoration: none;
+  color: #e8d8a8;
+  font-size: 18px;
+  font-weight: 500;
+  letter-spacing: 1px;
+  margin: 0 18px;
+  position: relative;
+  transition: all 0.3s ease;
+}
+
+.nav-links a::after {
+  content: "";
+  position: absolute;
+  width: 0;
+  height: 2px;
+  background: linear-gradient(90deg,#caa74a,#f5e6b3,#caa74a);
+  bottom: -6px;
+  left: 0;
+  transition: width 0.3s ease;
+}
+
+.nav-links a:hover::after {
+  width: 100%;
+}
+
+
+.nav-border {
+  width: 100%;
+  height: 440px;
+
+  background-image: url('assets/border.png');
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: contain;
+
+  margin-top: 5px;
+}
+
+
+.corner {
+  position: absolute;
+  width: 180px; /* adjust size */
+  opacity: 0.9;
+}
+
+
+
+/* CENTER HERO */
+.hero-content {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%,-50%);
+  text-align: center;
+}
+
+.hero-content h1 {
+  font-size: 64px;
+  font-family: "Playfair Display", serif;
+  margin-bottom: 10px;
+}
+
+.hero-content p {
+  font-size: 22px;
+  opacity: 0.9;
+  margin-bottom: 30px;
+}
+
+/* GOLD BUTTON */
+.hero-btn {
+  padding: 14px 42px;
+  font-size: 16px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  cursor: pointer;
+
+  /* TEXT */
+  color: #e8c35a;
+  font-weight: 600;
+
+  /* GLASS MATTE EFFECT */
+  background: rgba(255,255,255,0.08);
+  backdrop-filter: blur(6px);
+
+  /* GOLD FRAME */
+  border: 2px solid rgba(201,162,39,0.8);
+  border-radius: 10px;
+
+  /* INNER GLOW */
+  box-shadow:
+    inset 0 0 8px rgba(255,215,0,0.25),
+    0 0 12px rgba(201,162,39,0.25);
+
+  transition: all 0.3s ease;
+}
+
+.hero-btn:hover {
+  background: #b8931f;
 }
