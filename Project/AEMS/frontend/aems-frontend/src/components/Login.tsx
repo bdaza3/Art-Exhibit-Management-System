@@ -7,15 +7,50 @@ export const Login = () => {
   const [password, setPassword] = useState("")
   const navigate = useNavigate()
 
+   const fakeUsers = [
+  { username: "customer", password: "123", role: "customer" },
+  { username: "admin", password: "123", role: "admin" }
+]
+
   const handleLogin = () => {
     if (!username || !password) {
       alert("Please enter username and password")
       return
     }
 
-    // later connect backend auth
-    alert(`Welcome ${username}!`)
-    navigate("/") // redirect after login
+    // // later connect backend auth
+    // alert(`Welcome ${username}!`)
+    // navigate("/") // redirect after login
+
+    //temp user role login logic - later replace with the backend 
+
+    let role = ""
+
+    if (username === "admin") role = "admin"
+    else if (username === "super") role = "superadmin"
+    else role = "customer"
+
+    const foundUser = fakeUsers.find(
+      u => u.username === username && u.password === password
+    )
+
+    if(!foundUser) {
+      alert("Invalid Credentials")
+      return
+    }
+
+    localStorage.setItem("user",JSON.stringify(foundUser))
+    
+    // save role
+   
+
+    alert(`Welcome ${foundUser.username}! Role: ${foundUser.role}`)
+
+    // redirect by role
+    if (foundUser.role === "customer") navigate("/customer")
+    if (foundUser.role === "admin") navigate("/admin")
+    if (foundUser.role === "superadmin") navigate("/superadmin")
+
   }
 
   return (
@@ -41,6 +76,9 @@ export const Login = () => {
       </div>
     </div>
   )
+
+ 
+
 }
 
 

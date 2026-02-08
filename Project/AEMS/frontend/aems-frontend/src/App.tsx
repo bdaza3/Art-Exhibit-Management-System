@@ -6,7 +6,9 @@ import { grey } from "@mui/material/colors"
 import { Link, Routes, Route } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import bgImage from "./assets/background_image.jpg"
-
+import CustomerDashboard from "./pages/CustomerDashboard"
+import AdminDashboard from "./pages/AdminDashboard"
+import ProtectedRoute from "./components/ProtectedRoute"
 
 
 function App() {
@@ -68,6 +70,8 @@ return (
       </div>
 
     </div>
+
+    
   )
 
 
@@ -79,9 +83,31 @@ function Home() {
 
 export default function RootApp() {
   return (
-    <Routes>
+   <Routes>
+
+      {/* Public Routes */}
       <Route path='/' element={<Home />} />
       <Route path='/login' element={<LoginPage />} />
+
+      {/* Protected Routes */}
+      <Route
+        path='/customer'
+        element={
+          <ProtectedRoute role="customer">
+            <CustomerDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
     </Routes>
   )
 }
