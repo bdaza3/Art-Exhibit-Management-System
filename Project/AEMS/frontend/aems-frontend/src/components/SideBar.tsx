@@ -1,4 +1,5 @@
 import { useState } from "react"
+import { Link } from "react-router-dom"
 import "./SideBar.css"
 
 export default function SideBar() {
@@ -21,7 +22,7 @@ export default function SideBar() {
         </li>
 
         <li>
-          👤 {open && <span>Profile</span>}
+          👤 {open && <Link to="/profile"><span>Profile</span></Link>}
         </li>
 
         <li>

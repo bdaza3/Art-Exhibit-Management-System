@@ -9,7 +9,7 @@ import bgImage from "./assets/background_image.jpg"
 import CustomerDashboard from "./pages/CustomerDashboard"
 import AdminDashboard from "./pages/AdminDashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
-
+import ProfilePage from "./pages/ProfilePage"
 
 function App() {
 
@@ -104,6 +104,15 @@ export default function RootApp() {
         element={
           <ProtectedRoute role="admin">
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route 
+        path='/profile' 
+        element={
+          <ProtectedRoute>
+            <ProfilePage />
           </ProtectedRoute>
         }
       />
