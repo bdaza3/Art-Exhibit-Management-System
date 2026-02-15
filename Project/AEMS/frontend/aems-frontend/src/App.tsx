@@ -52,7 +52,9 @@ return (
       <nav className="nav">
         <div className="logo">AEMS</div>
         <div className="nav-links">
-          <a>Home</a>
+          <a>
+            <Link to="/">Home</Link>
+          </a>
           <a>Exhibitions</a>
           <a>Artists</a>
           <a>Contact</a>
