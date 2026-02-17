@@ -53,9 +53,9 @@ const ItemButton = ({ page, title, icon, router }: { page: string, title: string
             component={Link}
             to={router}
             sx={{
-                  color: grey[300],
+                  color: grey[400],
                   fontSize: '13px',
-                  mb: 1,
+                  mb: 2,
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
@@ -66,7 +66,7 @@ const ItemButton = ({ page, title, icon, router }: { page: string, title: string
                   },
                 }}
             >
-                <span style={{ marginBottom: 6 }}>{icon}</span>
+                <span style={{ marginBottom: 0.1 }}>{icon}</span>
                 <span>{title.charAt(0).toUpperCase() + title.slice(1).toLowerCase()}</span>
         </Button>
     )
