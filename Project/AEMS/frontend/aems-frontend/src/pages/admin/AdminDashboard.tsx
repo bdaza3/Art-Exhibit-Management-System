@@ -2,8 +2,8 @@ import { ClassNames } from "@emotion/react"
 import { useNavigate } from "react-router-dom"
 //import "../CustomerDashboard.css"
 import AdminSideBar from "../../components/admin/AdminSideBar"
-
-
+import DashboardArtistsCard from "../../components/admin/DashboardArtistsCard"
+//import DashboardArtworksCard from "../../components/admin/DashboardArtworksCard"
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -29,27 +29,7 @@ export default function AdminDashboard() {
         {/* CARDS */}
         <div className="cards">
 
-          <div
-            className="card"
-            style={{
-              backgroundImage:
-                "url(https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=2070)"
-            }}
-          >
-            <h3>View / Buy Arts</h3>
-            <p>Explore and purchase artworks</p>
-          </div>
-
-          <div
-            className="card"
-            style={{
-              backgroundImage:
-                "url(https://i.pinimg.com/736x/d4/e8/d1/d4e8d131a4465dd871963242f5b8770b.jpg)"
-            }}
-          >
-            <h3>Upcoming Events</h3>
-            <p>See future exhibitions</p>
-          </div>
+            <DashboardArtistsCard />
 
           <div
             className="card"
