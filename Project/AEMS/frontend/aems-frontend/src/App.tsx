@@ -8,6 +8,11 @@ import LoginPage from './pages/LoginPage'
 import bgImage from "./assets/background_image.jpg"
 import CustomerDashboard from "./pages/customer/CustomerDashboard"
 import AdminDashboard from "./pages/admin/AdminDashboard"
+import AdminArts from "./pages/admin/AdminArts"
+import AdminEvents from "./pages/admin/AdminEvents"
+import AdminOrders from "./pages/admin/AdminOrders"
+import AdminCustomers from "./pages/admin/AdminCustomers"
+import AdminReports from "./pages/admin/AdminReports"
 import ProtectedRoute from "./components/ProtectedRoute"
 import ProfilePage from "./pages/ProfilePage"
 
@@ -106,6 +111,60 @@ export default function RootApp() {
         element={
           <ProtectedRoute role="admin">
             <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/dashboard'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminDashboard />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/arts'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminArts />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/events'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminEvents />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/orders'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminOrders />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/customers'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminCustomers />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/reports'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminReports />
           </ProtectedRoute>
         }
       />

@@ -1,7 +1,7 @@
 import { ClassNames } from "@emotion/react"
 import { useNavigate } from "react-router-dom"
-import "../CustomerDashboard.css"
-import SideBar from "../../components/SideBar"
+//import "../CustomerDashboard.css"
+import AdminSideBar from "../../components/admin/AdminSideBar"
 
 
 
@@ -16,7 +16,7 @@ export default function AdminDashboard() {
 
   return (
     <div className="dashboard-layout">
-      <SideBar />
+      <AdminSideBar />
 
       <div className="dashboard-content">
 
