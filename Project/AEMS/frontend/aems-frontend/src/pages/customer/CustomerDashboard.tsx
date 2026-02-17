@@ -1,7 +1,7 @@
 import { ClassNames } from "@emotion/react"
 import { useNavigate } from "react-router-dom"
 import "./CustomerDashboard.css"
-import SideBar from "../components/SideBar"
+import SideBar from "../../components/SideBar"
 
 
 

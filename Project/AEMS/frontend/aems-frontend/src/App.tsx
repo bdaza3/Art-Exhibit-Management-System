@@ -6,8 +6,8 @@ import { grey } from "@mui/material/colors"
 import { Link, Routes, Route } from 'react-router-dom'
 import LoginPage from './pages/LoginPage'
 import bgImage from "./assets/background_image.jpg"
-import CustomerDashboard from "./pages/CustomerDashboard"
-import AdminDashboard from "./pages/AdminDashboard"
+import CustomerDashboard from "./pages/customer/CustomerDashboard"
+import AdminDashboard from "./pages/admin/AdminDashboard"
 import ProtectedRoute from "./components/ProtectedRoute"
 import ProfilePage from "./pages/ProfilePage"
 
