@@ -1,9 +1,13 @@
 import { ClassNames } from "@emotion/react"
-import { useNavigate } from "react-router-dom"
-//import "../CustomerDashboard.css"
+import { useNavigate, Link } from "react-router-dom"
+import "../customer/CustomerDashboard.css"
 import AdminSideBar from "../../components/admin/AdminSideBar"
 import DashboardArtistsCard from "../../components/admin/DashboardArtistsCard"
-//import DashboardArtworksCard from "../../components/admin/DashboardArtworksCard"
+import DashboardArtworksCard from "../../components/admin/DashboardArtworksCard"
+import DashboardEventsCard from "../../components/admin/DashboardEventsCard"
+import DashboardOrdersCard from "../../components/admin/DashboardOrdersCard"
+import DashboardCustomersCard from "../../components/admin/DashboardCustomersCard"
+import DashboardReportsCard from "../../components/admin/DashboardReportsCard"
 
 export default function AdminDashboard() {
   const navigate = useNavigate()
@@ -28,33 +32,13 @@ export default function AdminDashboard() {
 
         {/* CARDS */}
         <div className="cards">
-
-            <DashboardArtistsCard />
-
-          <div
-            className="card"
-            style={{
-              backgroundImage:
-                "url(https://images.unsplash.com/photo-1561214115-f2f134cc4912?q=80&w=2070)"
-            }}
-          >
-            <h3>Buy Tickets</h3>
-            <p>Reserve exhibition tickets</p>
-          </div>
-
-          <div
-            className="card"
-            style={{
-              backgroundImage:
-                "url(https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=2070)"
-            }}
-          >
-            <h3>Make Payments</h3>
-            <p>Secure online payments</p>
-          </div>
-
+          <DashboardArtistsCard />
+          <DashboardArtworksCard />
+          <DashboardEventsCard />
+          <DashboardOrdersCard />
+          <DashboardCustomersCard />
+          <DashboardReportsCard />
         </div>
-
       </div>
     </div>
   )

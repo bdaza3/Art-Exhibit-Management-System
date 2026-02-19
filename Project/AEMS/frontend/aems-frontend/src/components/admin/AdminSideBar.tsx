@@ -19,8 +19,6 @@ export default function AdminSideBar() {
         height: '100vh',
         width: '150px',
         borderRight: '1px solid #d4af37',
-        backdropFilter: 'blur(10px)',
-        WebkitBackdropFilter: 'blur(10px)',
         background: '#0f0f0f',
         color: 'white',
         display: 'flex',
