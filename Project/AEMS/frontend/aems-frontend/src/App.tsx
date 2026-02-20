@@ -15,6 +15,9 @@ import AdminCustomers from "./pages/admin/AdminCustomers"
 import AdminReports from "./pages/admin/AdminReports"
 import ProtectedRoute from "./components/ProtectedRoute"
 import ProfilePage from "./pages/ProfilePage"
+import CartPage from "./pages/CartPage";
+import SettingsPage from "./pages/SettingsPage";
+
 
 function App() {
 
@@ -177,6 +180,9 @@ export default function RootApp() {
           </ProtectedRoute>
         }
       />
+
+      <Route path="/cart" element={<CartPage />} />
+      <Route path="/settings" element={<SettingsPage />} />
 
     </Routes>
   )

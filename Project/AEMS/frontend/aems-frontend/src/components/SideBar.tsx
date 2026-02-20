@@ -26,11 +26,11 @@ export default function SideBar() {
         </li>
 
         <li>
-          ⚙️ {open && <span>Settings</span>}
+          ⚙️ {open && <Link to="/settings"><span>Settings</span></Link>}
         </li>
 
         <li>
-          🛒 {open && <span>Cart</span>}
+          🛒 {open && <Link to="/cart"><span>Cart</span></Link>}
         </li>
       </ul>
 
