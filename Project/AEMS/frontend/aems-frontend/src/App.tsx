@@ -8,8 +8,8 @@ import LoginPage from './pages/LoginPage'
 import bgImage from "./assets/background_image.jpg"
 import CustomerDashboard from "./pages/customer/CustomerDashboard"
 import AdminDashboard from "./pages/admin/AdminDashboard"
-import AdminArts from "./pages/admin/AdminArts"
-import AdminEvents from "./pages/admin/AdminEvents"
+import AdminArts from "./pages/admin/AdminArtworks"
+import AdminExhibitions from "./pages/admin/AdminExhibitions"
 import AdminOrders from "./pages/admin/AdminOrders"
 import AdminCustomers from "./pages/admin/AdminCustomers"
 import AdminReports from "./pages/admin/AdminReports"
@@ -137,7 +137,7 @@ export default function RootApp() {
         path='/admin/events'
         element={
           <ProtectedRoute role="admin">
-            <AdminEvents />
+            <AdminExhibitions />
           </ProtectedRoute>
         }
       />

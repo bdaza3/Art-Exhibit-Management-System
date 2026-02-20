@@ -4,7 +4,7 @@ import "../customer/CustomerDashboard.css"
 import AdminSideBar from "../../components/admin/AdminSideBar"
 import DashboardArtistsCard from "../../components/admin/DashboardArtistsCard"
 import DashboardArtworksCard from "../../components/admin/DashboardArtworksCard"
-import DashboardEventsCard from "../../components/admin/DashboardEventsCard"
+import DashboardExhibitionsCard from "../../components/admin/DashboardExhibitionsCard"
 import DashboardOrdersCard from "../../components/admin/DashboardOrdersCard"
 import DashboardCustomersCard from "../../components/admin/DashboardCustomersCard"
 import DashboardReportsCard from "../../components/admin/DashboardReportsCard"
@@ -34,7 +34,7 @@ export default function AdminDashboard() {
         <div className="cards">
           <DashboardArtistsCard />
           <DashboardArtworksCard />
-          <DashboardEventsCard />
+          <DashboardExhibitionsCard />
           <DashboardOrdersCard />
           <DashboardCustomersCard />
           <DashboardReportsCard />
