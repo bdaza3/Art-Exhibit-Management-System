@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useState } from "react";
+import { useLocation } from "react-router-dom";
 import "./CartPage.css";
-
-
 
 type CartItem = {
   id: string;
   title: string;
   artist?: string;
-  price: number; // store as number
+  price: number;
   image?: string;
   qty: number;
 };
@@ -28,48 +27,50 @@ function saveCart(items: CartItem[]) {
 }
 
 export default function CartPage() {
-  const [items, setItems] = useState<CartItem[]>([]);
+  // ✅ initialize from localStorage immediately (prevents empty overwrite)
+  const [items, setItems] = useState<CartItem[]>(() => loadCart());
 
+  // ✅ used to prevent saving before the first proper load
+  const [initialized, setInitialized] = useState(false);
+
+  const location = useLocation();
+
+  // ✅ mark initialized after first mount
   useEffect(() => {
-    setItems(loadCart());
+    setInitialized(true);
   }, []);
 
+  // ✅ whenever the route changes, re-load cart from localStorage
+  // (helps with browser back button + navigation)
   useEffect(() => {
+    setItems(loadCart());
+  }, [location]);
+
+  // ✅ save cart ONLY after initialization
+  useEffect(() => {
+    if (!initialized) return;
     saveCart(items);
-  }, [items]);
+  }, [items, initialized]);
+
+  // ✅ listen for custom event fired by ViewBuyArtPage
+  useEffect(() => {
+    const refresh = () => setItems(loadCart());
+
+    window.addEventListener("cart_updated", refresh);
+    window.addEventListener("storage", refresh);
+
+    return () => {
+      window.removeEventListener("cart_updated", refresh);
+      window.removeEventListener("storage", refresh);
+    };
+  }, []);
 
   const subtotal = useMemo(
     () => items.reduce((sum, it) => sum + it.price * it.qty, 0),
     [items]
   );
-  //SAMPLE DATA JUST TO CHECK - LATER CONNECT IT WITH VIEW/BUY ART
-  //---------------------------------------------------------------------------
-  useEffect(() => {
-  const sampleData = [
-    {
-      id: "art-101",
-      title: "Golden Horizon",
-      artist: "Amira K.",
-      price: 3200,
-      image: "https://images.unsplash.com/photo-1549880338-65ddcdfd017b",
-      qty: 1
-    },
-    {
-      id: "art-102",
-      title: "Velvet Night",
-      artist: "Sofia Marin",
-      price: 4600,
-      image: "https://images.unsplash.com/photo-1519681393784-d120267933ba",
-      qty: 2
-    }
-  ];
-  //---------------------------------------------------------------------------
 
-  localStorage.setItem("aems_cart", JSON.stringify(sampleData));
-  setItems(sampleData);
-}, []);
-
-  const tax = useMemo(() => subtotal * 0.1025, [subtotal]); // example tax
+  const tax = useMemo(() => subtotal * 0.1025, [subtotal]);
   const total = useMemo(() => subtotal + tax, [subtotal, tax]);
 
   function inc(id: string) {
@@ -81,7 +82,9 @@ export default function CartPage() {
   function dec(id: string) {
     setItems((prev) =>
       prev
-        .map((it) => (it.id === id ? { ...it, qty: Math.max(1, it.qty - 1) } : it))
+        .map((it) =>
+          it.id === id ? { ...it, qty: Math.max(1, it.qty - 1) } : it
+        )
         .filter((it) => it.qty > 0)
     );
   }
@@ -95,7 +98,6 @@ export default function CartPage() {
   }
 
   function checkout() {
-    // Later: call the backend payment endpoint....
     alert("Checkout coming soon....");
   }
 
@@ -135,9 +137,13 @@ export default function CartPage() {
                 </div>
 
                 <div className="qty">
-                  <button className="btn btn-square" onClick={() => dec(it.id)}>-</button>
+                  <button className="btn btn-square" onClick={() => dec(it.id)}>
+                    -
+                  </button>
                   <span>{it.qty}</span>
-                  <button className="btn btn-square" onClick={() => inc(it.id)}>+</button>
+                  <button className="btn btn-square" onClick={() => inc(it.id)}>
+                    +
+                  </button>
                 </div>
 
                 <div className="line-total">
@@ -169,6 +175,7 @@ export default function CartPage() {
             <button className="btn btn-primary" onClick={checkout}>
               Checkout
             </button>
+
             <p className="muted tiny">
               Payments can later route to your “Make Payments” flow / Stripe.
             </p>

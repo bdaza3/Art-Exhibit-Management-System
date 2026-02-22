@@ -17,7 +17,7 @@ import ProtectedRoute from "./components/ProtectedRoute"
 import ProfilePage from "./pages/ProfilePage"
 import CartPage from "./pages/CartPage";
 import SettingsPage from "./pages/SettingsPage";
-
+import ViewBuyArtPage from "./pages/ViewBuyArtPage";
 
 function App() {
 
@@ -173,7 +173,7 @@ export default function RootApp() {
       />
 
       <Route 
-        path='/profile' 
+        path='/customer/profile' 
         element={
           <ProtectedRoute>
             <ProfilePage />
@@ -181,9 +181,32 @@ export default function RootApp() {
         }
       />
 
-      <Route path="/cart" element={<CartPage />} />
-      <Route path="/settings" element={<SettingsPage />} />
+      <Route
+  path="/customer/cart"
+  element={
+    <ProtectedRoute role="customer">
+      <CartPage />
+    </ProtectedRoute>
+  }
+/>
 
+<Route
+  path="/customer/art"
+  element={
+    <ProtectedRoute role="customer">
+      <ViewBuyArtPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/customer/settings"
+  element={
+    <ProtectedRoute role="customer">
+      <SettingsPage />
+    </ProtectedRoute>
+  }
+/>
     </Routes>
   )
 }

@@ -22,15 +22,15 @@ export default function SideBar() {
         </li>
 
         <li>
-          👤 {open && <Link to="/profile"><span>Profile</span></Link>}
+          👤 {open && <Link to="/customer/profile"><span>Profile</span></Link>}
         </li>
 
         <li>
-          ⚙️ {open && <Link to="/settings"><span>Settings</span></Link>}
+          ⚙️ {open && <Link to="/customer/settings"><span>Settings</span></Link>}
         </li>
 
         <li>
-          🛒 {open && <Link to="/cart"><span>Cart</span></Link>}
+          🛒 {open && <Link to="/customer/cart"><span>Cart</span></Link>}
         </li>
       </ul>
 

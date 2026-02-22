@@ -1,0 +1,232 @@
+.art-page {
+  padding: 24px;
+  min-height: 100vh;
+  color: #f5f5f5;
+
+  background:
+    radial-gradient(900px 450px at 15% 10%, rgba(212, 175, 55, 0.10), transparent 60%),
+    radial-gradient(900px 450px at 85% 25%, rgba(212, 175, 55, 0.06), transparent 65%),
+    linear-gradient(180deg, #0b0b0b 0%, #111 45%, #0a0a0a 100%);
+}
+
+.art-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.art-hero h2 {
+  margin: 0 0 6px 0;
+  font-size: 28px;
+}
+
+.controls {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.search, select {
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  padding: 10px 12px;
+  outline: none;
+}
+
+.search {
+  width: 280px;
+}
+
+.search:focus, select:focus {
+  border-color: rgba(212, 175, 55, 0.65);
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
+}
+
+.art-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.art-card {
+  text-align: left;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: rgba(0, 0, 0, 0.35);
+  overflow: hidden;
+  cursor: pointer;
+
+  box-shadow: 0 10px 30px rgba(0,0,0,0.35);
+  transition: transform 0.18s ease, border-color 0.18s ease;
+}
+
+.art-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(212, 175, 55, 0.38);
+}
+
+.art-image {
+  height: 180px;
+  background-size: cover;
+  background-position: center;
+}
+
+.art-card-body {
+  padding: 12px 12px 14px;
+}
+
+.art-title-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  align-items: baseline;
+}
+
+.art-title {
+  font-weight: 800;
+}
+
+.art-price {
+  color: #d4af37;
+  font-weight: 800;
+}
+
+.muted {
+  opacity: 0.75;
+  font-size: 13px;
+}
+
+.btn {
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  padding: 11px 14px;
+  background: rgba(255, 255, 255, 0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+.btn-ghost { background: transparent; }
+
+.btn-primary {
+  background: #d4af37;
+  color: #111;
+  border: none;
+  font-weight: 800;
+}
+
+.btn-primary:hover { background: #e6c24a; }
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 22px;
+  z-index: 50;
+}
+
+.modal {
+  width: min(980px, 95vw);
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(10,10,10,0.90);
+  box-shadow: 0 24px 80px rgba(0,0,0,0.6);
+  overflow: hidden;
+}
+
+.modal-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 14px 16px;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.12);
+}
+
+.modal-title {
+  font-size: 20px;
+  font-weight: 900;
+}
+
+.icon-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(255,255,255,0.06);
+  color: #fff;
+  cursor: pointer;
+}
+
+.modal-content {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 14px;
+  padding: 14px;
+}
+
+.modal-image {
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  min-height: 420px;
+  background-size: cover;
+  background-position: center;
+}
+
+.modal-details {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.detail-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.10);
+}
+
+.label { opacity: 0.7; }
+.value { font-weight: 700; }
+.gold { color: #d4af37; }
+
+.block {
+  padding-top: 8px;
+}
+
+.block-title {
+  font-weight: 900;
+  margin-bottom: 6px;
+}
+
+.block-text {
+  line-height: 1.45;
+}
+
+.museum-list {
+  margin: 6px 0 0;
+  padding-left: 18px;
+}
+
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.toast {
+  position: fixed;
+  bottom: 22px;
+  right: 22px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  background: rgba(0,0,0,0.75);
+  color: #fff;
+}
