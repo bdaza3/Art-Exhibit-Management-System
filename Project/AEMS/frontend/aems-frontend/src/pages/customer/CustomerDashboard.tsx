@@ -48,6 +48,12 @@ export default function CustomerDashboard() {
 
           <div
             className="card"
+            onClick={() => navigate("/customer/events")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") navigate("/customer/events");
+            }}
             style={{
               backgroundImage:
                 "url(https://i.pinimg.com/736x/d4/e8/d1/d4e8d131a4465dd871963242f5b8770b.jpg)"
@@ -59,6 +65,12 @@ export default function CustomerDashboard() {
 
           <div
             className="card"
+            onClick={() => navigate("/customer/tickets")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") navigate("/customer/ticckets")
+            }}
             style={{
               backgroundImage:
                 "url(https://images.unsplash.com/photo-1561214115-f2f134cc4912?q=80&w=2070)"

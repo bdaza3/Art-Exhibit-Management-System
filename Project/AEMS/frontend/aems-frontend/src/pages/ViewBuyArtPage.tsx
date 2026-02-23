@@ -9,6 +9,7 @@ import cityStreet from "../assets/Art/city_street.jpeg";
 import Silence from "../assets/Art/silence.jpeg";
 import beyondHorizon from "../assets/Art/beyond_horizon.jpeg";
 import Balance from "../assets/Art/balance.jpeg";
+import PageTopBar from "../components/PageTopBar";
 
 
 
@@ -256,6 +257,7 @@ export default function ViewBuyArtPage() {
 
   return (
     <div className="art-page">
+      <PageTopBar title="View / Buy Arts" />
       <div className="art-hero">
         <div>
           <h2>View / Buy Art</h2>

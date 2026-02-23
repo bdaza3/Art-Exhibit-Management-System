@@ -18,6 +18,8 @@ import ProfilePage from "./pages/ProfilePage"
 import CartPage from "./pages/CartPage";
 import SettingsPage from "./pages/SettingsPage";
 import ViewBuyArtPage from "./pages/ViewBuyArtPage";
+import UpcomingEventsPage from './pages/UpcomingEventsPage'
+import BuyTicketsPage from './pages/BuyTicketsPage'
 
 function App() {
 
@@ -195,6 +197,24 @@ export default function RootApp() {
   element={
     <ProtectedRoute role="customer">
       <ViewBuyArtPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/customer/events"
+  element={
+    <ProtectedRoute role="customer">
+      <UpcomingEventsPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/customer/tickets"
+  element={
+    <ProtectedRoute role="customer">
+      <BuyTicketsPage />
     </ProtectedRoute>
   }
 />
