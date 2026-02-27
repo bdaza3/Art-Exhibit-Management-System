@@ -1,5 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import "./PageTopBar.css";
+import HouseIcon from '@mui/icons-material/House';
 
 export default function PageTopBar({ title }: { title: string }) {
   const navigate = useNavigate();
@@ -11,7 +12,7 @@ export default function PageTopBar({ title }: { title: string }) {
           className="topbar-home"
           onClick={() => navigate("/customer")}
         >
-          🏠 Home
+          <HouseIcon/> Home
         </button>
       </div>
 
