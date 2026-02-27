@@ -1,6 +1,10 @@
 import { useState } from "react"
 import { Link } from "react-router-dom"
 import "./SideBar.css"
+import HouseIcon from '@mui/icons-material/House'
+import SettingsIcon from '@mui/icons-material/Settings'
+import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
+import PeopleIcon from '@mui/icons-material/People'
 
 export default function SideBar() {
   const [open, setOpen] = useState(true)
@@ -18,19 +22,19 @@ export default function SideBar() {
 
       <ul>
         <li>
-          🏠 {open && <span>Home</span>}
+          <HouseIcon/> {open && <span>Home</span>}
         </li>
 
         <li>
-          👤 {open && <Link to="/customer/profile"><span>Profile</span></Link>}
+          <PeopleIcon/> {open && <Link to="/customer/profile"><span>Profile</span></Link>}
         </li>
 
         <li>
-          ⚙️ {open && <Link to="/customer/settings"><span>Settings</span></Link>}
+          <SettingsIcon/> {open && <Link to="/customer/settings"><span>Settings</span></Link>}
         </li>
 
         <li>
-          🛒 {open && <Link to="/customer/cart"><span>Cart</span></Link>}
+          <ShoppingCartIcon/> {open && <Link to="/customer/cart"><span>Cart</span></Link>}
         </li>
       </ul>
 
