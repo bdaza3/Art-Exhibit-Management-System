@@ -46,6 +46,11 @@
   box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.12);
 }
 
+.controls select option {
+  background: #282623;
+  color: #fff; 
+}
+
 .art-grid {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));

@@ -32,6 +32,11 @@
   outline:none;
 }
 
+.events-controls select option {
+  background: #282623;
+  color: #fff; 
+}
+
 .muted{ opacity:.75; }
 .tiny{ font-size:12px; }
 

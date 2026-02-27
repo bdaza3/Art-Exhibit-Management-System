@@ -55,5 +55,6 @@
 }
 
 .sidebar li:hover {
+  transition: 0.25s ease-in-out;
   background: rgba(212,175,55,0.2);
 }

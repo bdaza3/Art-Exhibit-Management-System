@@ -44,7 +44,7 @@ export const Login = () => {
     // save role
    
 
-    alert(`Welcome ${foundUser.username}! Role: ${foundUser.role}`)
+    //alert(`Welcome ${foundUser.username}! Role: ${foundUser.role}`)
 
     // redirect by role
     if (foundUser.role === "customer") navigate("/customer")
