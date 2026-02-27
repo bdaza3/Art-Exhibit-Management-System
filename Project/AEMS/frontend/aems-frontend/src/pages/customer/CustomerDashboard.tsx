@@ -5,6 +5,7 @@ import SideBar from "../../components/SideBar"
 
 
 
+
 export default function CustomerDashboard() {
   const navigate = useNavigate()
   const username = localStorage.getItem("username")
@@ -69,7 +70,7 @@ export default function CustomerDashboard() {
             role="button"
             tabIndex={0}
             onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") navigate("/customer/ticckets")
+              if (e.key === "Enter" || e.key === " ") navigate("/customer/tickets")
             }}
             style={{
               backgroundImage:
@@ -82,8 +83,14 @@ export default function CustomerDashboard() {
 
           <div
             className="card"
+            onClick={() => navigate("/customer/payments")}
+            role="button"
+            tabIndex={0}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") navigate("/customer/payments")
+            }}
             style={{
-              backgroundImage:
+              backgroundImage: 
                 "url(https://images.unsplash.com/photo-1518998053901-5348d3961a04?q=80&w=2070)"
             }}
           >

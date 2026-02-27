@@ -27,22 +27,23 @@
 
 /* HEADER / HERO */
 .dash-header {
-  display: flex;
+ display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 30px;
+
+  padding: 28px 40px;
+  margin-bottom: 40px;
 
   background: linear-gradient(
-      rgba(0,0,0,0.65),
-      rgba(0,0,0,0.65)
-    ),
-    url("https://images.unsplash.com/photo-1544966503-7cc5ac882d5f?q=80&w=2070");
+    135deg,
+    rgba(212,175,55,0.08),
+    rgba(0,0,0,0.85)
+  );
 
-  background-size: cover;
-  background-position: center;
-  padding: 40px;
+  border: 1px solid rgba(212,175,55,0.3);
   border-radius: 18px;
-  border: 1px solid rgba(212,175,55,0.4);
+
+  backdrop-filter: blur(8px);
 }
 
 .dash-header h2 {
