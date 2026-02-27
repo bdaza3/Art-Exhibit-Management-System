@@ -20,6 +20,7 @@ import SettingsPage from "./pages/SettingsPage";
 import ViewBuyArtPage from "./pages/ViewBuyArtPage";
 import UpcomingEventsPage from './pages/UpcomingEventsPage'
 import BuyTicketsPage from './pages/BuyTicketsPage'
+import MakePaymentsPage from './pages/MakePaymentsPage'
 
 function App() {
 
@@ -224,6 +225,15 @@ export default function RootApp() {
   element={
     <ProtectedRoute role="customer">
       <SettingsPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/customer/payments"
+  element={
+    <ProtectedRoute role="customer">
+      <MakePaymentsPage />
     </ProtectedRoute>
   }
 />

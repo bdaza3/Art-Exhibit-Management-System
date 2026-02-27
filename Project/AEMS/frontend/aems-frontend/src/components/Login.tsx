@@ -40,7 +40,7 @@ export const Login = () => {
     }
 
     localStorage.setItem("user",JSON.stringify(foundUser))
-    
+    localStorage.setItem("username", foundUser.username);
     // save role
    
 
