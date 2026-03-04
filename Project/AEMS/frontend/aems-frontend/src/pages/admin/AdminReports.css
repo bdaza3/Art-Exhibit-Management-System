@@ -1,0 +1,270 @@
+/* page header */
+.reports-header {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 22px;
+}
+
+.reports-header h2 {
+  margin: 0;
+  font-size: 30px;
+  font-weight: 650;
+}
+
+.muted {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+.small {
+  font-size: 12px;
+}
+
+.reports-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.pill {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(10px);
+}
+
+.pill-label {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+.pill select {
+  border: none;
+  outline: none;
+  color: white;
+  background: transparent;
+  font-weight: 600;
+}
+
+.btn-gold {
+  border: none;
+  cursor: pointer;
+  border-radius: 12px;
+  padding: 10px 14px;
+  font-weight: 700;
+  background: #d4af37;
+  color: #111;
+}
+
+.btn-gold:hover {
+  filter: brightness(1.02);
+}
+
+/* KPI cards */
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(180px, 1fr));
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.kpi {
+  padding: 16px 16px;
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.22);
+  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(0, 0, 0, 0.85));
+  backdrop-filter: blur(10px);
+}
+
+.kpi-title {
+  font-size: 12px;
+  letter-spacing: 0.3px;
+}
+
+.kpi-value {
+  margin-top: 6px;
+  font-size: 22px;
+  font-weight: 800;
+}
+
+.kpi-delta {
+  margin-top: 8px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.kpi-delta.up {
+  color: rgba(212, 175, 55, 0.95);
+}
+
+.kpi-delta.down {
+  color: rgba(255, 120, 120, 0.95);
+}
+
+/* main panels */
+.reports-grid {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 16px;
+}
+
+.panel {
+  border-radius: 18px;
+  border: 1px solid rgba(212, 175, 55, 0.18);
+  background: rgba(0, 0, 0, 0.35);
+  backdrop-filter: blur(10px);
+  padding: 16px;
+  overflow: hidden;
+}
+
+.panel-top {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.panel h3 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 750;
+}
+
+/* sparkline */
+.spark {
+  display: grid;
+  grid-template-columns: repeat(12, 1fr);
+  gap: 10px;
+  align-items: end;
+  height: 190px;
+  padding: 6px 0 2px;
+}
+
+.spark-col {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  gap: 6px;
+  align-items: center;
+}
+
+.spark-bar {
+  width: 100%;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  background: linear-gradient(180deg, rgba(212, 175, 55, 0.42), rgba(212, 175, 55, 0.08));
+}
+
+.spark-label {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.65);
+}
+
+/* lists */
+.list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.list-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.list-title {
+  font-weight: 750;
+}
+
+.list-value {
+  font-weight: 800;
+}
+
+.gold {
+  color: #d4af37;
+}
+
+/* activity */
+.activity {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.activity-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 12px 12px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.activity-left {
+  min-width: 0;
+}
+
+.activity-title {
+  font-weight: 750;
+  margin-top: 2px;
+}
+
+.activity-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.activity-amt {
+  font-weight: 800;
+}
+
+/* status pill */
+.status {
+  font-size: 12px;
+  font-weight: 800;
+  padding: 6px 10px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.status.success {
+  border-color: rgba(212, 175, 55, 0.35);
+  color: rgba(212, 175, 55, 0.95);
+}
+
+.status.pending {
+  border-color: rgba(255, 255, 255, 0.18);
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.status.failed {
+  border-color: rgba(255, 120, 120, 0.35);
+  color: rgba(255, 120, 120, 0.95);
+}
+
+/* responsive */
+@media (max-width: 1200px) {
+  .kpi-grid {
+    grid-template-columns: repeat(2, minmax(180px, 1fr));
+  }
+  .reports-grid {
+    grid-template-columns: 1fr;
+  }
+}
