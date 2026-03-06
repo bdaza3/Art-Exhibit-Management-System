@@ -13,6 +13,7 @@ import AdminExhibitions from "./pages/admin/AdminExhibitions"
 import AdminOrders from "./pages/admin/AdminOrders"
 import AdminCustomers from "./pages/admin/AdminCustomers"
 import AdminReports from "./pages/admin/AdminReports"
+import AdminAuctions from "./pages/admin/AdminAuctions"
 import ProtectedRoute from "./components/ProtectedRoute"
 import ProfilePage from "./pages/ProfilePage"
 import CartPage from "./pages/CartPage";
@@ -144,6 +145,15 @@ export default function RootApp() {
         element={
           <ProtectedRoute role="admin">
             <AdminExhibitions />
+          </ProtectedRoute>
+        }
+      />
+
+      <Route
+        path='/admin/auctions'
+        element={
+          <ProtectedRoute role="admin">
+            <AdminAuctions />
           </ProtectedRoute>
         }
       />

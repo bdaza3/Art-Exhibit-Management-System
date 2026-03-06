@@ -8,6 +8,7 @@ import EventIcon from '@mui/icons-material/Event'
 import ShoppingCartIcon from '@mui/icons-material/ShoppingCart'
 import PeopleIcon from '@mui/icons-material/People'
 import BarChartIcon from '@mui/icons-material/BarChart'
+import GavelIcon from '@mui/icons-material/Gavel'
 //import "./SideBar.css"
 
 export default function AdminSideBar() {
@@ -37,7 +38,8 @@ export default function AdminSideBar() {
       <ItemButton page="Arts" title="Artworks" icon={<ImageIcon />} router="/admin/arts"/>
       <ItemButton page="Events" title="Exhibitions" icon={<EventIcon />} router="/admin/events"/>
       <ItemButton page="Orders" title="Orders" icon={<ShoppingCartIcon />} router="/admin/orders"/>
-      <ItemButton page="Customers" title="Customers" icon={<PeopleIcon />} router="/admin/customers"/>
+      <ItemButton page="Auctions" title="Auctions" icon={<GavelIcon />} router="/admin/auctions"/>
+      {/*<ItemButton page="Customers" title="Customers" icon={<PeopleIcon />} router="/admin/customers"/>*/}
       <ItemButton page="Reports" title="Reports" icon={<BarChartIcon />} router="/admin/reports"/>
     </Box>
     </Box>
