@@ -10,10 +10,13 @@
 
 
   background:
-    radial-gradient(900px 450px at 15% 10%, rgba(212, 175, 55, 0.12), transparent 60%),
-    radial-gradient(900px 450px at 85% 25%, rgba(212, 175, 55, 0.06), transparent 65%),
-    radial-gradient(900px 450px at 70% 90%, rgba(255, 255, 255, 0.05), transparent 60%),
-    linear-gradient(180deg, #0b0b0b 0%, #111 45%, #0a0a0a 100%);
+    radial-gradient(ellipse 900px 500px at 20% 15%, rgba(0,80,180,0.12), transparent 55%),
+    radial-gradient(ellipse 800px 450px at 80% 25%, rgba(212,175,55,0.10), transparent 50%),
+    radial-gradient(ellipse 700px 400px at 60% 80%, rgba(0,100,80,0.08), transparent 50%),
+    radial-gradient(circle 300px at 15% 70%, rgba(0,60,120,0.10), transparent 40%),
+    radial-gradient(circle 250px at 85% 65%, rgba(212,175,55,0.06), transparent 38%),
+    conic-gradient(from 180deg at 40% 45%, rgba(0,80,180,0.04), transparent 12%, rgba(212,175,55,0.03), transparent 25%),
+    linear-gradient(155deg, #060810 0%, #0a0d14 30%, #080c12 60%, #060810 100%);
   border-radius: 22px;
 }
 

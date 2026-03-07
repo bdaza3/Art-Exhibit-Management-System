@@ -1,62 +1,54 @@
 import { useState } from 'react';
-import { useNavigate } from "react-router-dom"
+import { useNavigate, Link } from "react-router-dom"
 
+const API_BASE = "http://localhost:8000/api/auth";
 
 export const Login = () => {
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [error, setError] = useState("")
   const navigate = useNavigate()
 
-   const fakeUsers = [
-  { username: "customer", password: "123", role: "customer" },
-  { username: "admin", password: "123", role: "admin" }
-]
-
-  const handleLogin = () => {
+  const handleLogin = async () => {
     if (!username || !password) {
-      alert("Please enter username and password")
+      setError("Please enter username and password")
       return
     }
 
-    // // later connect backend auth
-    // alert(`Welcome ${username}!`)
-    // navigate("/") // redirect after login
+    setError("")
 
-    //temp user role login logic - later replace with the backend 
+    try {
+      const res = await fetch(`${API_BASE}/login/`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({ username, password }),
+      })
 
-    let role = ""
+      if (!res.ok) {
+        const data = await res.json()
+        setError(data.error || "Invalid credentials")
+        return
+      }
 
-    if (username === "admin") role = "admin"
-    else if (username === "super") role = "superadmin"
-    else role = "customer"
+      const user = await res.json()
+      localStorage.setItem("user", JSON.stringify(user))
+      localStorage.setItem("username", user.username)
 
-    const foundUser = fakeUsers.find(
-      u => u.username === username && u.password === password
-    )
-
-    if(!foundUser) {
-      alert("Invalid Credentials")
-      return
+      if (user.role === "customer") navigate("/customer")
+      else if (user.role === "admin") navigate("/admin")
+      else if (user.role === "superadmin") navigate("/superadmin")
+    } catch {
+      setError("Could not connect to server")
     }
-
-    localStorage.setItem("user",JSON.stringify(foundUser))
-    localStorage.setItem("username", foundUser.username);
-    // save role
-   
-
-    //alert(`Welcome ${foundUser.username}! Role: ${foundUser.role}`)
-
-    // redirect by role
-    if (foundUser.role === "customer") navigate("/customer")
-    if (foundUser.role === "admin") navigate("/admin")
-    if (foundUser.role === "superadmin") navigate("/superadmin")
-
   }
 
   return (
     <div className="login-bg">
       <div className="login-card">
         <h2 className="login-title">AEMS Login</h2>
+
+        {error && <p style={{ color: "#ff6b6b", marginBottom: 10 }}>{error}</p>}
 
         <input
           type="text"
@@ -73,15 +65,15 @@ export const Login = () => {
         />
 
         <button onClick={handleLogin}>LOGIN</button>
+
+        <p style={{ marginTop: 20, color: "rgba(255,255,255,0.7)" }}>
+          Don't have an account?{" "}
+          <Link to="/register" style={{ color: "#d4af37" }}>Create one</Link>
+        </p>
       </div>
     </div>
   )
-
- 
-
 }
-
-
 
 
 

@@ -83,12 +83,19 @@
   letter-spacing: 1px;
 
   cursor: pointer;
-  transition: 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .login-card button:hover {
   background: #d4af37;
   color: black;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(212,175,55,0.4);
+}
+
+.login-card button:active {
+  transform: translateY(0) scale(0.97);
+  box-shadow: 0 2px 8px rgba(212,175,55,0.3);
 }
 
 .login-title {

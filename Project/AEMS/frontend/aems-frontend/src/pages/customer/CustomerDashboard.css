@@ -2,8 +2,67 @@
 .dashboard-layout {
   display: flex;
   min-height: 100vh;
-  background: linear-gradient(to bottom, #0f0f0f, #1a1a1a);
+  position: relative;
+  overflow-x: hidden;
+  background:
+    radial-gradient(ellipse 950px 550px at 15% 15%, rgba(212,175,55,0.14), transparent 52%),
+    radial-gradient(ellipse 800px 500px at 85% 20%, rgba(75,0,130,0.10), transparent 50%),
+    radial-gradient(ellipse 700px 450px at 50% 75%, rgba(0,80,120,0.10), transparent 50%),
+    radial-gradient(circle 300px at 25% 60%, rgba(212,175,55,0.07), transparent 38%),
+    radial-gradient(circle 260px at 80% 55%, rgba(75,0,130,0.08), transparent 38%),
+    conic-gradient(from 160deg at 55% 40%, rgba(212,175,55,0.04), transparent 12%, rgba(0,80,120,0.03), transparent 24%),
+    linear-gradient(155deg, #08080e 0%, #0c0a14 30%, #0a0812 60%, #06060a 100%);
   font-family: "Poppins", sans-serif;
+}
+
+/* ═══════ PARALLAX ABSTRACT SHAPES ═══════ */
+.parallax-shapes {
+  position: fixed;
+  top: 0;
+  left: 150px;
+  right: 0;
+  height: 250vh;
+  pointer-events: none;
+  z-index: 0;
+  will-change: transform;
+}
+
+.shape {
+  position: absolute;
+  opacity: 0.7;
+}
+
+.shape-1 { width: 220px; top: 5%;  left: 8%;  animation: floatSlow 18s ease-in-out infinite; }
+.shape-2 { width: 160px; top: 12%; right: 12%; animation: floatSlow 22s ease-in-out infinite reverse; }
+.shape-3 { width: 320px; top: 35%; left: 15%;  animation: floatSlow 25s ease-in-out infinite; }
+.shape-4 { width: 180px; top: 50%; right: 8%;  animation: floatSlow 20s ease-in-out infinite reverse; }
+.shape-5 { width: 240px; top: 65%; left: 5%;   animation: floatSlow 28s ease-in-out infinite; }
+.shape-6 { width: 200px; top: 22%; left: 50%;  animation: floatSlow 24s ease-in-out infinite reverse; }
+.shape-7 { width: 280px; top: 80%; right: 15%; animation: floatSlow 20s ease-in-out infinite; }
+
+@keyframes floatSlow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  25%  { transform: translateY(-18px) rotate(2deg); }
+  50%  { transform: translateY(8px) rotate(-1deg); }
+  75%  { transform: translateY(-10px) rotate(1.5deg); }
+}
+
+/* Glowing dots */
+.shape-dot {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+.dot-1 { width: 6px; height: 6px; background: rgba(212,175,55,0.35); top: 8%;  left: 40%; animation: pulseDot 4s ease-in-out infinite; }
+.dot-2 { width: 4px; height: 4px; background: rgba(128,0,128,0.30);  top: 30%; right: 25%; animation: pulseDot 5s ease-in-out infinite 1s; }
+.dot-3 { width: 5px; height: 5px; background: rgba(212,175,55,0.25); top: 55%; left: 30%; animation: pulseDot 6s ease-in-out infinite 2s; }
+.dot-4 { width: 3px; height: 3px; background: rgba(0,128,128,0.30);  top: 42%; right: 35%; animation: pulseDot 4.5s ease-in-out infinite 0.5s; }
+.dot-5 { width: 5px; height: 5px; background: rgba(75,0,130,0.28);   top: 75%; left: 55%; animation: pulseDot 5.5s ease-in-out infinite 1.5s; }
+
+@keyframes pulseDot {
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.8); }
 }
 
 /* SIDEBAR */
@@ -20,6 +79,8 @@
   flex: 1;
   padding: 60px 90px;
   color: white;
+  position: relative;
+  z-index: 1;
 
   margin-left: 220px; /* same as open sidebar */
   transition: margin-left 0.3s;
@@ -119,4 +180,11 @@
 .card:focus {
   outline: 2px solid rgba(212, 175, 55, 0.6);
   outline-offset: 4px;
+}
+
+/* ART SECTION EMBEDDED */
+.dashboard-art-section {
+  margin-top: 60px;
+  padding-top: 40px;
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
 }

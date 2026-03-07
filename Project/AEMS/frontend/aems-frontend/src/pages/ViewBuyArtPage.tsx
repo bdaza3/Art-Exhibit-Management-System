@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import "./ViewBuyArtPage.css";
 import velvetNight from "../assets/Art/Velvet_night.jpeg";
 import goldenHorizon from "../assets/Art/Golden_Horizon.jpeg";
@@ -10,10 +10,11 @@ import Silence from "../assets/Art/silence.jpeg";
 import beyondHorizon from "../assets/Art/beyond_horizon.jpeg";
 import Balance from "../assets/Art/balance.jpeg";
 import PageTopBar from "../components/PageTopBar";
+import SideBar from "../components/SideBar";
 
 
 
-type Artwork = {
+export type Artwork = {
   id: string;
   title: string;
   artist: string;
@@ -27,7 +28,7 @@ type Artwork = {
   image: string;
 };
 
-type CartItem = {
+export type CartItem = {
   id: string;
   title: string;
   artist?: string;
@@ -36,10 +37,10 @@ type CartItem = {
   qty: number;
 };
 
-const CART_KEY = "aems_cart";
+export const CART_KEY = "aems_cart";
 
 // ✅ Sample data (replace later with API/database)
-const ARTWORKS: Artwork[] = [
+export const ARTWORKS: Artwork[] = [
   {
     id: "art-101",
     title: "Golden Horizon",
@@ -179,11 +180,11 @@ const ARTWORKS: Artwork[] = [
   
 ];
 
-function formatMoney(n: number) {
+export function formatMoney(n: number) {
   return n.toLocaleString("en-US", { style: "currency", currency: "USD" });
 }
 
-function getCart(): CartItem[] {
+export function getCart(): CartItem[] {
   try {
     return JSON.parse(localStorage.getItem(CART_KEY) || "[]");
   } catch {
@@ -191,7 +192,7 @@ function getCart(): CartItem[] {
   }
 }
 
-function addToCart(art: Artwork) {
+export function addToCart(art: Artwork) {
   const cart = getCart();
   const existing = cart.find((c) => c.id === art.id);
 
@@ -255,8 +256,16 @@ export default function ViewBuyArtPage() {
     window.setTimeout(() => setToast(""), 1200);
   }
 
+  const gridRef = useRef<HTMLDivElement>(null);
+
+  function scrollToGrid() {
+    gridRef.current?.scrollIntoView({ behavior: 'smooth' });
+  }
+
   return (
-    <div className="art-page">
+    <div style={{ display: "flex" }}>
+      <SideBar />
+      <div className="art-page">
       <PageTopBar title="View / Buy Arts" />
       <div className="art-hero">
         <div>
@@ -264,6 +273,9 @@ export default function ViewBuyArtPage() {
           <p className="muted">
             Explore curated works by artists. Click any piece for full details.
           </p>
+          <button className="scroll-down-btn" onClick={scrollToGrid} type="button">
+            Browse Collection ▼
+          </button>
         </div>
 
         <div className="controls">
@@ -290,7 +302,7 @@ export default function ViewBuyArtPage() {
         </div>
       </div>
 
-      <div className="art-grid">
+      <div className="art-grid" ref={gridRef}>
         {filtered.map((art) => (
           <button
             key={art.id}
@@ -383,6 +395,7 @@ export default function ViewBuyArtPage() {
       )}
 
       {toast && <div className="toast">{toast}</div>}
+      </div>
     </div>
   );
 }

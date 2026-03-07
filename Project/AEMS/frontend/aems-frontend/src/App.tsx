@@ -22,6 +22,7 @@ import ViewBuyArtPage from "./pages/ViewBuyArtPage";
 import UpcomingEventsPage from './pages/UpcomingEventsPage'
 import BuyTicketsPage from './pages/BuyTicketsPage'
 import MakePaymentsPage from './pages/MakePaymentsPage'
+import RegisterPage from './pages/RegisterPage'
 
 function App() {
 
@@ -102,6 +103,7 @@ export default function RootApp() {
       {/* Public Routes */}
       <Route path='/' element={<Home />} />
       <Route path='/login' element={<LoginPage />} />
+      <Route path='/register' element={<RegisterPage />} />
 
       {/* Protected Routes */}
       <Route
