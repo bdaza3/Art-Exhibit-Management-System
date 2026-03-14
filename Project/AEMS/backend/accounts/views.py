@@ -5,6 +5,9 @@ from rest_framework import status
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import api_view, authentication_classes, permission_classes
 from rest_framework.response import Response
+from .models import Exhibition
+from .serializers import ExhibitionSerializer
+from django.utils import timezone
 
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer
 
@@ -82,3 +85,34 @@ def login_view(request):
 def logout_view(request):
     logout(request)
     return Response({'message': 'Logged out successfully'})
+
+
+@api_view(["GET", "POST"])
+def exhibitions_list_create(request):
+    if request.method == "GET":
+        exhibitions = Exhibition.objects.all().order_by("-date")
+        serializer = ExhibitionSerializer(exhibitions, many=True)
+        return Response(serializer.data)
+
+    elif request.method == "POST":
+        serializer = ExhibitionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+@api_view(["GET"])
+def exhibitions_stats(request):
+    exhibitions = Exhibition.objects.all()
+    today = timezone.now().date()
+
+    total = exhibitions.count()
+    upcoming = exhibitions.filter(date__gte=today).count()
+    past = exhibitions.filter(date__lt=today).count()
+
+    return Response({
+        "total": total,
+        "upcoming": upcoming,
+        "past": past
+    })

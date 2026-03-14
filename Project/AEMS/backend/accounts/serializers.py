@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from .models import CustomUser
+from .models import Exhibition
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -46,3 +47,7 @@ class ProfileUpdateSerializer(serializers.ModelSerializer):
         if CustomUser.objects.exclude(pk=user.pk).filter(username=value).exists():
             raise serializers.ValidationError('This username is already taken.')
         return value
+class ExhibitionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Exhibition
+        fields = "__all__"
