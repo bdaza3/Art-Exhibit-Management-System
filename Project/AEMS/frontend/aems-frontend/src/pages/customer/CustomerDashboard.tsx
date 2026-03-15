@@ -3,8 +3,9 @@ import { useNavigate } from "react-router-dom"
 import "./CustomerDashboard.css"
 import "../ViewBuyArtPage.css"
 import SideBar from "../../components/SideBar"
-import { ARTWORKS, addToCart, formatMoney } from "../ViewBuyArtPage"
-import type { Artwork } from "../ViewBuyArtPage"
+import ArtViewer3D from "../../components/customer/3DArtworkViewer"
+import { ARTWORKS, addToCart, formatMoney } from "../../lib/artData"
+import type { Artwork } from "../../lib/artData"
 
 
 export default function CustomerDashboard() {
@@ -51,6 +52,9 @@ export default function CustomerDashboard() {
     localStorage.clear()
     navigate("/")
   }
+
+  const [show3DTest, setShow3DTest] = useState(false)
+  const TEST_MODEL = "/models/low-poly_tesla_cybertruck.glb"
 
   function scrollToHome() {
     homeRef.current?.scrollIntoView({ behavior: "smooth" })
@@ -218,7 +222,9 @@ export default function CustomerDashboard() {
         <div ref={artRef} className="dashboard-art-section">
           <div className="art-hero">
             <div>
-              <h2>View / Buy Art</h2>
+              <h2>View / Buy Art</h2>            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
+              <button className="btn btn-ghost" onClick={() => setShow3DTest(true)}>Open 3D Test</button>
+            </div>
               <p className="muted">Explore curated works by artists. Click any piece for full details.</p>
             </div>
             <div className="controls">
@@ -295,6 +301,27 @@ export default function CustomerDashboard() {
         )}
 
         {toast && <div className="toast">{toast}</div>}
+
+        {/*3d test modal*/}
+        {show3DTest && (
+          <div className="modal-backdrop" onMouseDown={() => setShow3DTest(false)}>
+            <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+              <div className="modal-top">
+                <div>
+                  <div className="modal-title">3D Viewer Test</div>
+                  <div className="muted">Model: low-poly_tesla_cybertruck.glb</div>
+                </div>
+                <button className="icon-btn" onClick={() => setShow3DTest(false)} aria-label="Close">✕</button>
+              </div>
+              <div className="modal-content" style={{ gridTemplateColumns: '1fr' }}>
+                <div className="viewer-wrap" style={{ width: '100%', height: 520 }}>
+                  <ArtViewer3D modelUrl={TEST_MODEL} height={520} />
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+        {/*end of test*/}
       </div>
     </div>
   )
