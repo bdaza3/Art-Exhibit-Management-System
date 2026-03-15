@@ -4,8 +4,49 @@ import "./CustomerDashboard.css"
 import "../ViewBuyArtPage.css"
 import SideBar from "../../components/SideBar"
 import ArtViewer3D from "../../components/customer/3DArtworkViewer"
-import { ARTWORKS, addToCart, formatMoney } from "../../components/artData"
+import { addToCart, formatMoney } from "../../components/artData"
 import type { Artwork } from "../../components/artData"
+
+const API_BASE = "http://127.0.0.1:8000/api/artworks"
+
+type AicArtwork = {
+  id: number
+  title: string
+  artist: string | null
+  date: string | null
+  imageUrl: string | null
+  description?: string | null
+}
+
+type AicArtworksResponse = {
+  data?: AicArtwork[]
+  pagination?: {
+    current_page?: number
+    total_pages?: number
+    total?: number
+    limit?: number
+  }
+}
+
+function mapAicArtworkToStoreArtwork(item: AicArtwork): Artwork {
+  const syntheticPrice = 500 + (item.id % 95) * 50
+  const fallbackText = "From the Art Institute of Chicago."
+  const cleanedDescription = item.description?.trim() || fallbackText
+
+  return {
+    id: `aic-${item.id}`,
+    title: item.title || "Untitled",
+    artist: item.artist || "Unknown Artist",
+    price: syntheticPrice,
+    dateCreated: item.date || "Unknown",
+    medium: "Collection Piece",
+    dimensions: "Not specified",
+    purpose: fallbackText,
+    description: cleanedDescription,
+    museumsExhibited: ["The Art Institute of Chicago"],
+    image: item.imageUrl || "",
+  }
+}
 
 
 export default function CustomerDashboard() {
@@ -70,15 +111,61 @@ export default function CustomerDashboard() {
   const [sort, setSort] = useState<"newest" | "priceLow" | "priceHigh">("newest")
   const [selected, setSelected] = useState<Artwork | null>(null)
   const [toast, setToast] = useState("")
+  const [artworks, setArtworks] = useState<Artwork[]>([])
+  const [isLoadingArt, setIsLoadingArt] = useState(true)
+  const [artError, setArtError] = useState("")
+  const [page, setPage] = useState(1)
+  const [limit, setLimit] = useState(12)
+  const [totalPages, setTotalPages] = useState(1)
+
+  useEffect(() => {
+    let isCancelled = false
+
+    const loadArtworks = async () => {
+      setIsLoadingArt(true)
+      setArtError("")
+
+      try {
+        const params = new URLSearchParams({ page: String(page), limit: String(limit) })
+        const response = await fetch(`${API_BASE}/aic/?${params.toString()}`)
+
+        if (!response.ok) {
+          throw new Error(`Request failed with status ${response.status}`)
+        }
+
+        const payload: AicArtworksResponse = await response.json()
+        const mapped = (payload.data || []).map(mapAicArtworkToStoreArtwork)
+
+        if (!isCancelled) {
+          setArtworks(mapped)
+          setTotalPages(payload.pagination?.total_pages || 1)
+        }
+      } catch {
+        if (!isCancelled) {
+          setArtError("Could not load artworks from the Art Institute API.")
+        }
+      } finally {
+        if (!isCancelled) {
+          setIsLoadingArt(false)
+        }
+      }
+    }
+
+    void loadArtworks()
+
+    return () => {
+      isCancelled = true
+    }
+  }, [page, limit])
 
   const artists = useMemo(() => {
-    const unique = Array.from(new Set(ARTWORKS.map((a) => a.artist)))
+    const unique = Array.from(new Set(artworks.map((a) => a.artist)))
     return ["All", ...unique]
-  }, [])
+  }, [artworks])
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase()
-    let list = ARTWORKS.filter((a) => {
+    let list = artworks.filter((a) => {
       const matchesQuery =
         !q ||
         a.title.toLowerCase().includes(q) ||
@@ -91,7 +178,7 @@ export default function CustomerDashboard() {
     else if (sort === "priceLow") list = list.sort((a, b) => a.price - b.price)
     else if (sort === "priceHigh") list = list.sort((a, b) => b.price - a.price)
     return list
-  }, [query, artist, sort])
+  }, [artworks, query, artist, sort])
 
   function onAdd(art: Artwork) {
     addToCart(art)
@@ -244,8 +331,23 @@ export default function CustomerDashboard() {
                 <option value="priceLow">Sort: Price (Low → High)</option>
                 <option value="priceHigh">Sort: Price (High → Low)</option>
               </select>
+
+              <select
+                value={limit}
+                onChange={(e) => {
+                  setLimit(Number(e.target.value))
+                  setPage(1)
+                }}
+              >
+                <option value={12}>12 per page</option>
+                <option value={24}>24 per page</option>
+                <option value={48}>48 per page</option>
+              </select>
             </div>
           </div>
+
+          {isLoadingArt && <p className="muted">Loading collection...</p>}
+          {artError && <p className="muted">{artError}</p>}
 
           <div className="art-grid">
             {filtered.map((art) => (
@@ -261,6 +363,30 @@ export default function CustomerDashboard() {
                 </div>
               </button>
             ))}
+          </div>
+
+          {!isLoadingArt && !artError && filtered.length === 0 && (
+            <p className="muted">No artworks matched your filters.</p>
+          )}
+
+          <div className="pagination-controls">
+            <button
+              className="btn btn-ghost"
+              type="button"
+              disabled={isLoadingArt || page <= 1}
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+            >
+              Previous
+            </button>
+            <span className="muted">Page {page} of {totalPages}</span>
+            <button
+              className="btn btn-ghost"
+              type="button"
+              disabled={isLoadingArt || page >= totalPages}
+              onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
+            >
+              Next
+            </button>
           </div>
         </div>
 
