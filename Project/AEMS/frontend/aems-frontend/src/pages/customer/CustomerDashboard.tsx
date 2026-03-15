@@ -4,8 +4,8 @@ import "./CustomerDashboard.css"
 import "../ViewBuyArtPage.css"
 import SideBar from "../../components/SideBar"
 import ArtViewer3D from "../../components/customer/3DArtworkViewer"
-import { ARTWORKS, addToCart, formatMoney } from "../../lib/artData"
-import type { Artwork } from "../../lib/artData"
+import { ARTWORKS, addToCart, formatMoney } from "../../components/artData"
+import type { Artwork } from "../../components/artData"
 
 
 export default function CustomerDashboard() {

@@ -8,9 +8,9 @@ import {
   addToCart,
   getCart,
   formatMoney,
-} from "../lib/artData";
+} from "../components/artData";
 
-import type { Artwork } from "../lib/artData";
+import type { Artwork } from "../components/artData";
 
 export default function ViewBuyArtPage() {
   const [query, setQuery] = useState("");
