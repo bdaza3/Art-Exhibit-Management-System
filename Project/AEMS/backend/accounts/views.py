@@ -50,6 +50,7 @@ def profile_view(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
@@ -61,6 +62,7 @@ def register_view(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
@@ -79,6 +81,7 @@ def login_view(request):
     return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+@csrf_exempt
 @api_view(['POST'])
 @authentication_classes([])
 @permission_classes([])
