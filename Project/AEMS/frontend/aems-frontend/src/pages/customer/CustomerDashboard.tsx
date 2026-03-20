@@ -3,9 +3,13 @@ import { useNavigate } from "react-router-dom"
 import "./CustomerDashboard.css"
 import "../ViewBuyArtPage.css"
 import SideBar from "../../components/SideBar"
+import Header from "../../components/Header"
 import ArtViewer3D from "../../components/customer/3DArtworkViewer"
 import { addToCart, formatMoney } from "../../components/artData"
 import type { Artwork } from "../../components/artData"
+import PersonIcon from "@mui/icons-material/Person"
+import { ItemButton } from "../../components/customer/ItemButton"
+import { useLocation } from "react-router-dom"
 
 const API_BASE = "http://127.0.0.1:8000/api/artworks"
 
@@ -52,6 +56,8 @@ function mapAicArtworkToStoreArtwork(item: AicArtwork): Artwork {
 export default function CustomerDashboard() {
   const navigate = useNavigate()
   const username = localStorage.getItem("username")
+  const location = useLocation()
+  const activePath = location.pathname
   const parallaxRef = useRef<HTMLDivElement>(null)
   const homeRef = useRef<HTMLDivElement>(null)
   const artRef = useRef<HTMLDivElement>(null)
@@ -226,10 +232,11 @@ export default function CustomerDashboard() {
 
       <div className="dashboard-content">
 
+        <Header title=""/>
+
         {/* HERO HEADER */}
         <div ref={homeRef} className="dash-header">
           <h2>Welcome back, {username} 🎨</h2>
-          <button onClick={logout}>Logout</button>
         </div>
 
         {/* CARDS */}
