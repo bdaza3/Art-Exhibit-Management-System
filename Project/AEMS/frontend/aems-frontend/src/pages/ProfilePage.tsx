@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import "./ProfilePage.css";
 import { Link } from "react-router-dom";
-import SideBar from "../components/SideBar";
+import SideBar from "../components/customer/SideBar";
 
 const API_BASE = "http://localhost:8000/api/auth";
 

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./BuyTicketsPage.css";
-import PageTopBar from "../components/PageTopBar";
+import PageTopBar from "../../components/PageTopBar";
 
 type TicketType = "General" | "Student" | "VIP";
 

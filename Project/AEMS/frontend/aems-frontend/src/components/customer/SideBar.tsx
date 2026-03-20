@@ -9,7 +9,7 @@ import PaletteIcon from '@mui/icons-material/Palette'
 import EventIcon from '@mui/icons-material/Event'
 import ConfirmationNumberIcon from '@mui/icons-material/ConfirmationNumber'
 import PaymentIcon from '@mui/icons-material/Payment'
-import { ItemButton } from "./customer/ItemButton"
+import { ItemButton } from "./ItemButton"
 
 export default function SideBar({ activeOverride, onArtClick, onHomeClick }: { activeOverride?: string; onArtClick?: () => void; onHomeClick?: () => void }) {
   const location = useLocation()

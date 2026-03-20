@@ -1,11 +1,11 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./ViewBuyArtPage.css";
-import PageTopBar from "../components/PageTopBar";
-import SideBar from "../components/SideBar";
-import ArtViewer3D from "../components/customer/3DArtworkViewer";
-import { addToCart, formatMoney } from "../components/artData";
+import PageTopBar from "../../components/PageTopBar";
+import SideBar from "../../components/customer/SideBar";
+import ArtViewer3D from "../../components/customer/3DArtworkViewer";
+import { addToCart, formatMoney } from "../../components/artData";
 
-import type { Artwork } from "../components/artData";
+import type { Artwork } from "../../components/artData";
 
 const API_BASE = "http://127.0.0.1:8000/api/artworks";
 

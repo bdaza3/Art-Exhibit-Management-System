@@ -16,12 +16,12 @@ import AdminReports from "./pages/admin/AdminReports"
 import AdminAuctions from "./pages/admin/AdminAuctions"
 import ProtectedRoute from "./components/ProtectedRoute"
 import ProfilePage from "./pages/ProfilePage"
-import CartPage from "./pages/CartPage";
+import CartPage from "./pages/customer/CartPage";
 import SettingsPage from "./pages/SettingsPage";
-import ViewBuyArtPage from "./pages/ViewBuyArtPage";
+import ViewBuyArtPage from "./pages/customer/ViewBuyArtPage";
 import UpcomingEventsPage from './pages/UpcomingEventsPage'
-import BuyTicketsPage from './pages/BuyTicketsPage'
-import MakePaymentsPage from './pages/MakePaymentsPage'
+import BuyTicketsPage from './pages/customer/BuyTicketsPage'
+import MakePaymentsPage from './pages/customer/MakePaymentsPage'
 import RegisterPage from './pages/RegisterPage'
 
 function App() {
