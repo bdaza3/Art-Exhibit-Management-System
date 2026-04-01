@@ -8,9 +8,17 @@ from rest_framework.response import Response
 from .models import Exhibition
 from .serializers import ExhibitionSerializer
 from django.utils import timezone
-
+import requests
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from .models import Artwork
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer
+from .serializers import ArtworkSerializer
+from rest_framework.viewsets import ModelViewSet
 
+class ArtworkViewSet(ModelViewSet):
+    queryset = Artwork.objects.all()
+    serializer_class = ArtworkSerializer
 
 class CsrfExemptSessionAuth(SessionAuthentication):
     def enforce_csrf(self, request):
@@ -118,4 +126,38 @@ def exhibitions_stats(request):
         "total": total,
         "upcoming": upcoming,
         "past": past
+    })
+
+@api_view(['GET'])
+def import_aic_artworks(request):
+    url = "https://api.artic.edu/api/v1/artworks?page=1&limit=20"
+
+    res = requests.get(url)
+    data = res.json().get("data", [])
+
+    created = []
+
+    for item in data:
+        title = item.get("title")
+        artist = item.get("artist_title")
+        image_id = item.get("image_id")
+
+        image_url = f"https://www.artic.edu/iiif/2/{image_id}/full/843,/0/default.jpg" if image_id else ""
+
+       
+        if not Artwork.objects.filter(title=title).exists():
+            art = Artwork.objects.create(
+                title=title,
+                artist=artist,
+                price=500,
+                category="AIC",
+                image=image_url,
+                description="Imported from AIC",
+            )
+            created.append(art.title)
+
+    return Response({
+        "message": "Imported successfully",
+        "count": len(created),
+        "items": created
     })

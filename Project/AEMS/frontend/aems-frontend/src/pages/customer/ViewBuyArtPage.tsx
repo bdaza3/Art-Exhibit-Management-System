@@ -1,3 +1,5 @@
+
+// import type { Artwork } from "../../components/artData";
 import { useEffect, useMemo, useRef, useState } from "react";
 import "./ViewBuyArtPage.css";
 import PageTopBar from "../../components/PageTopBar";
@@ -5,339 +7,202 @@ import SideBar from "../../components/customer/SideBar";
 import ArtViewer3D from "../../components/customer/3DArtworkViewer";
 import { addToCart, formatMoney } from "../../components/artData";
 
-import type { Artwork } from "../../components/artData";
 
-const API_BASE = "http://127.0.0.1:8000/api/artworks";
 
-type AicArtwork = {
+
+
+const API_BASE = "http://127.0.0.1:8000/api/artworks/";
+
+type Artwork = {
   id: number;
   title: string;
-  artist: string | null;
-  date: string | null;
-  imageUrl: string | null;
-  description?: string | null;
+  artist: string;
+  price: number;
+  category: string;
+  image: string;
+  description: string;
+  model_3d?: string | null;
 };
-
-type AicArtworksResponse = {
-  data?: AicArtwork[];
-  pagination?: {
-    current_page?: number;
-    total_pages?: number;
-    total?: number;
-    limit?: number;
-  };
-};
-
-function mapAicArtworkToStoreArtwork(item: AicArtwork): Artwork {
-  const syntheticPrice = 500 + (item.id % 95) * 50;
-  const fallbackText = "From the Art Institute of Chicago.";
-  const cleanedDescription = item.description?.trim() || fallbackText;
-
-  return {
-    id: `aic-${item.id}`,
-    title: item.title || "Untitled",
-    artist: item.artist || "Unknown Artist",
-    price: syntheticPrice,
-    dateCreated: item.date || "Unknown",
-    medium: "Collection Piece",
-    dimensions: "Not specified",
-    purpose: fallbackText,
-    description: cleanedDescription,
-    museumsExhibited: ["The Art Institute of Chicago"],
-    image: item.imageUrl || "",
-  };
-}
 
 export default function ViewBuyArtPage() {
-  const [artworks, setArtworks] = useState<Artwork[]>([]);
+  const [artworks, setArtworks] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [loadError, setLoadError] = useState("");
-  const [page, setPage] = useState(1);
-  const [limit, setLimit] = useState(12);
-  const [totalPages, setTotalPages] = useState(1);
 
   const [query, setQuery] = useState("");
   const [artist, setArtist] = useState("All");
   const [sort, setSort] = useState<"newest" | "priceLow" | "priceHigh">("newest");
 
-  const [selected, setSelected] = useState<Artwork | null>(null);
+  const [selected, setSelected] = useState<any | null>(null);
   const [toast, setToast] = useState("");
   const [show3D, setShow3D] = useState(false);
 
+  // ✅ FETCH FROM DJANGO DB
   useEffect(() => {
-    let isCancelled = false;
-
     const loadArtworks = async () => {
-      setIsLoading(true);
-      setLoadError("");
-
       try {
-        const params = new URLSearchParams({ page: String(page), limit: String(limit) });
-        const response = await fetch(`${API_BASE}/aic/?${params.toString()}`);
+        const res = await fetch("http://127.0.0.1:8000/api/artworks/");
 
-        if (!response.ok) {
-          throw new Error(`Request failed with status ${response.status}`);
+        if (!res.ok) {
+          throw new Error("Failed to fetch");
         }
 
-        const payload: AicArtworksResponse = await response.json();
-        const mapped = (payload.data || []).map(mapAicArtworkToStoreArtwork);
+        const data = await res.json();
+        console.log("DATA:", data);
 
-        if (!isCancelled) {
-          setArtworks(mapped);
-          setTotalPages(payload.pagination?.total_pages || 1);
-        }
-      } catch {
-        if (!isCancelled) {
-          setLoadError("Could not load artworks from the Art Institute API.");
-        }
+        // ✅ MAP BACKEND → FRONTEND STRUCTURE
+        const mapped = data.map((item: Artwork) => ({
+          id: item.id,
+          title: item.title || "Untitled",
+          artist: item.artist || "Unknown",
+          price: item.price ?? 500,
+          category: item.category || "Collection Piece",
+          description: item.description || "",
+          image: item.image || "",
+          modelUrl: item.model_3d || null,
+        }));
+
+        setArtworks(mapped);
+      } catch (err) {
+        console.error("ERROR:", err);
+        setLoadError("Failed to load artworks");
       } finally {
-        if (!isCancelled) {
-          setIsLoading(false);
-        }
+        setIsLoading(false);
       }
     };
 
-    void loadArtworks();
+    loadArtworks();
+  }, []);
 
-    return () => {
-      isCancelled = true;
-    };
-  }, [page, limit]);
-
+  // ✅ FILTER ARTISTS
   const artists = useMemo(() => {
     const unique = Array.from(new Set(artworks.map((a) => a.artist)));
     return ["All", ...unique];
   }, [artworks]);
 
+  // ✅ FILTER + SEARCH + SORT
   const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
+    const q = query.toLowerCase();
 
     let list = artworks.filter((a) => {
       const matchesQuery =
-        !q ||
         a.title.toLowerCase().includes(q) ||
         a.artist.toLowerCase().includes(q) ||
-        a.medium.toLowerCase().includes(q);
+        (a.category || "").toLowerCase().includes(q); // ✅ SAFE
 
       const matchesArtist = artist === "All" || a.artist === artist;
 
       return matchesQuery && matchesArtist;
     });
 
-    if (sort === "newest") {
-      list = list.sort((a, b) => (a.dateCreated < b.dateCreated ? 1 : -1));
-    } else if (sort === "priceLow") {
-      list = list.sort((a, b) => a.price - b.price);
-    } else if (sort === "priceHigh") {
-      list = list.sort((a, b) => b.price - a.price);
-    }
+    if (sort === "priceLow") list.sort((a, b) => a.price - b.price);
+    if (sort === "priceHigh") list.sort((a, b) => b.price - a.price);
 
     return list;
   }, [artworks, query, artist, sort]);
 
-  function onAdd(art: Artwork) {
+  // 🛒 ADD TO CART
+  function onAdd(art: any) {
     addToCart(art);
-    setToast(`Added "${art.title}" to cart`);
-    window.setTimeout(() => setToast(""), 1200);
+    setToast(`Added "${art.title}"`);
+    setTimeout(() => setToast(""), 1200);
   }
 
   const gridRef = useRef<HTMLDivElement>(null);
 
-  function scrollToGrid() {
-    gridRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }
-
   return (
     <div style={{ display: "flex" }}>
       <SideBar />
-      <div className="art-page">
-      <PageTopBar title="View / Buy Arts" />
-      <div className="art-hero">
-        <div>
-          <h2>View / Buy Art</h2>
-          <p className="muted">
-            Explore curated works by artists. Click any piece for full details.
-          </p>
-          <button className="scroll-down-btn" onClick={scrollToGrid} type="button">
-            Browse Collection ▼
-          </button>
-        </div>
 
-        <div className="controls">
+      <div className="art-page">
+        <PageTopBar title="View / Buy Arts" />
+
+  
+        <div className="art-hero">
+          <h2>Explore Art</h2>
+
           <input
-            className="search"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search title, artist, medium..."
+            placeholder="Search..."
+            className="search"
           />
 
           <select value={artist} onChange={(e) => setArtist(e.target.value)}>
             {artists.map((a) => (
-              <option key={a} value={a}>
-                {a}
-              </option>
+              <option key={a}>{a}</option>
             ))}
           </select>
 
           <select value={sort} onChange={(e) => setSort(e.target.value as any)}>
-            <option value="newest">Sort: Newest</option>
-            <option value="priceLow">Sort: Price (Low → High)</option>
-            <option value="priceHigh">Sort: Price (High → Low)</option>
-          </select>
-
-          <select
-            value={limit}
-            onChange={(e) => {
-              setLimit(Number(e.target.value));
-              setPage(1);
-            }}
-          >
-            <option value={12}>12 per page</option>
-            <option value={24}>24 per page</option>
-            <option value={48}>48 per page</option>
+            <option value="newest">Newest</option>
+            <option value="priceLow">Price Low → High</option>
+            <option value="priceHigh">Price High → Low</option>
           </select>
         </div>
-      </div>
 
-      {isLoading && <p className="muted">Loading collection...</p>}
-      {loadError && <p className="muted">{loadError}</p>}
+     
+        {isLoading && <p>Loading artworks...</p>}
+        {loadError && <p>{loadError}</p>}
 
-      <div className="art-grid" ref={gridRef}>
-        {filtered.map((art) => (
-          <button
-            key={art.id}
-            className="art-card"
-            onClick={() => { setSelected(art); setShow3D(false); }}
-            type="button"
-            disabled={isLoading}
-          >
-            <div className="art-image" style={{ backgroundImage: `url(${art.image})` }} />
-            <div className="art-card-body">
-              <div className="art-title-row">
-                <div className="art-title">{art.title}</div>
-                <div className="art-price">{formatMoney(art.price)}</div>
-              </div>
-              <div className="art-artist muted">{art.artist}</div>
-              <div className="art-meta muted">{art.medium}</div>
+
+        <div className="art-grid" ref={gridRef}>
+          {filtered.map((art) => (
+            <div
+              key={art.id}
+              className="art-card"
+              onClick={() => setSelected(art)}
+            >
+              <div
+                className="art-image"
+                style={{ backgroundImage: `url(${art.image})` }}
+              />
+              <h3>{art.title}</h3>
+              <p>{art.artist}</p>
+              <p className="gold">${art.price}</p>
             </div>
-          </button>
-        ))}
-      </div>
+          ))}
+        </div>
 
-      {!isLoading && !loadError && filtered.length === 0 && (
-        <p className="muted">No artworks matched your filters.</p>
-      )}
-
-      <div className="pagination-controls">
-        <button
-          className="btn btn-ghost"
-          type="button"
-          disabled={isLoading || page <= 1}
-          onClick={() => setPage((p) => Math.max(1, p - 1))}
-        >
-          Previous
-        </button>
-        <span className="muted">Page {page} of {totalPages}</span>
-        <button
-          className="btn btn-ghost"
-          type="button"
-          disabled={isLoading || page >= totalPages}
-          onClick={() => setPage((p) => Math.min(totalPages, p + 1))}
-        >
-          Next
-        </button>
-      </div>
-
-      {/* Modal */}
-      {selected && (
-        <div className="modal-backdrop" onMouseDown={() => setSelected(null)}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="modal-top">
-              <div>
-                <div className="modal-title">{selected.title}</div>
-                <div className="muted">{selected.artist}</div>
-              </div>
-
-              <button className="icon-btn" onClick={() => setSelected(null)} aria-label="Close">
-                ✕
-              </button>
-            </div>
-
-            <div className="modal-content">
+       
+        {selected && (
+          <div className="modal-backdrop" onClick={() => setSelected(null)}>
+            <div className="modal" onClick={(e) => e.stopPropagation()}>
+              <div className="modal-content">
                 <div className="modal-left">
-                  <div className="modal-image" style={{ backgroundImage: `url(${selected.image})` }}>
-                    {selected.modelUrl && (
-                      <button
-                        className="btn btn-ghost viewer-toggle"
-                        onClick={() => setShow3D((s) => !s)}
-                        type="button"
-                      >
-                        {show3D ? "Show Image" : "View 3D"}
-                      </button>
-                    )}
-                  </div>
+                  <div
+                    className="modal-image"
+                    style={{ backgroundImage: `url(${selected.image})` }}
+                  />
+
+                  {selected.modelUrl && (
+                    <button onClick={() => setShow3D(!show3D)}>
+                      {show3D ? "Hide 3D" : "View 3D"}
+                    </button>
+                  )}
 
                   {show3D && selected.modelUrl && (
-                    <div style={{ marginTop: 12 }}>
-                      <ArtViewer3D modelUrl={selected.modelUrl} height={420} />
-                    </div>
+                    <ArtViewer3D modelUrl={selected.modelUrl} height={400} />
                   )}
                 </div>
 
-              <div className="modal-details">
-                <div className="detail-row">
-                  <span className="label">Price</span>
-                  <span className="value gold">{formatMoney(selected.price)}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Created</span>
-                  <span className="value">{selected.dateCreated}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Medium</span>
-                  <span className="value">{selected.medium}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Dimensions</span>
-                  <span className="value">{selected.dimensions}</span>
-                </div>
+                <div className="modal-right">
+                  <h2>{selected.title}</h2>
+                  <p>{selected.artist}</p>
+                  <p>{selected.description}</p>
 
-                <div className="block">
-                  <div className="block-title">Purpose</div>
-                  <div className="block-text muted">{selected.purpose}</div>
-                </div>
-
-                <div className="block">
-                  <div className="block-title">Description</div>
-                  <div className="block-text muted">{selected.description}</div>
-                </div>
-
-                <div className="block">
-                  <div className="block-title">Museums Exhibited</div>
-                  <ul className="museum-list">
-                    {selected.museumsExhibited.map((m) => (
-                      <li key={m} className="muted">
-                        {m}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-
-                <div className="modal-actions">
-                  <button className="btn btn-primary" onClick={() => onAdd(selected)}>
-                    Add to cart
+                  <button onClick={() => onAdd(selected)}>
+                    Add to Cart
                   </button>
-                  <button className="btn btn-ghost" onClick={() => setSelected(null)}>
-                    Close
-                  </button>
+
+                  <button onClick={() => setSelected(null)}>Close</button>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
 
-      {toast && <div className="toast">{toast}</div>}
+        {toast && <div className="toast">{toast}</div>}
       </div>
     </div>
   );

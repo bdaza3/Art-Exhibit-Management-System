@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from .models import CustomUser
 from .models import Exhibition
+from .models import Artwork
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -51,3 +52,8 @@ class ExhibitionSerializer(serializers.ModelSerializer):
     class Meta:
         model = Exhibition
         fields = "__all__"
+
+class ArtworkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Artwork
+        fields = '__all__'

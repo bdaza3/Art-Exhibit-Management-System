@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path,include
 
 from .views import artic_artwork_detail, list_artic_artworks
 
