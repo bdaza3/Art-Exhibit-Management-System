@@ -4,6 +4,7 @@ import { useNavigate, Link } from "react-router-dom"
 const API_BASE = "http://localhost:8000/api/auth";
 
 export default function Register() {
+  const isDevMode = import.meta.env.DEV
   const [username, setUsername] = useState("")
   const [firstName, setFirstName] = useState("")
   const [lastName, setLastName] = useState("")
@@ -13,7 +14,7 @@ export default function Register() {
   const [error, setError] = useState("")
   const navigate = useNavigate()
 
-  const handleRegister = async () => {
+  const handleRegister = async (role: "customer" | "admin" = "customer") => {
     if (!username || !firstName || !lastName || !email || !password || !confirmPassword) {
       setError("Please fill in all required fields")
       return
@@ -35,7 +36,7 @@ export default function Register() {
       const res = await fetch(`${API_BASE}/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username, first_name: firstName, last_name: lastName, email, password, role: "customer" }),
+        body: JSON.stringify({ username, first_name: firstName, last_name: lastName, email, password, role }),
       })
 
       if (!res.ok) {
@@ -100,7 +101,12 @@ export default function Register() {
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
 
-        <button onClick={handleRegister}>CREATE ACCOUNT</button>
+        <button onClick={() => handleRegister("customer")}>CREATE ACCOUNT</button>
+        {isDevMode && (
+          <button onClick={() => handleRegister("admin")} style={{ marginTop: 10 }}>
+            CREATE ADMIN ACCOUNT (DEV)
+          </button>
+        )}
 
         <p style={{ marginTop: 20, color: "rgba(255,255,255,0.7)" }}>
           Already have an account?{" "}

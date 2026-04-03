@@ -1,4 +1,5 @@
 from django.contrib.auth import authenticate, login, logout
+from django.conf import settings
 from django.utils.decorators import method_decorator
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import status
@@ -63,6 +64,13 @@ def profile_view(request):
 @authentication_classes([])
 @permission_classes([])
 def register_view(request):
+    requested_role = request.data.get('role', 'customer')
+    if requested_role == 'admin' and not settings.DEBUG:
+        return Response(
+            {'error': 'Admin registration is only available in development mode.'},
+            status=status.HTTP_403_FORBIDDEN,
+        )
+
     serializer = RegisterSerializer(data=request.data)
     if serializer.is_valid():
         user = serializer.save()
