@@ -4,6 +4,16 @@ from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
 from .services.artic_api import fetch_artwork_detail, fetch_artworks
+from .models import Order
+from .serializers import OrderSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+
+@api_view(["GET"])
+def list_orders(request):
+    orders = Order.objects.all().order_by("-created_at")
+    serializer = OrderSerializer(orders, many=True)
+    return Response(serializer.data)
 
 
 @api_view(["GET"])
