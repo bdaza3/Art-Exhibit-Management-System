@@ -32,26 +32,40 @@ type AicArtworksResponse = {
   }
 }
 
-function mapAicArtworkToStoreArtwork(item: AicArtwork): Artwork {
-  const syntheticPrice = 500 + (item.id % 95) * 50
-  const fallbackText = "From the Art Institute of Chicago."
-  const cleanedDescription = item.description?.trim() || fallbackText
+// function mapAicArtworkToStoreArtwork(item: AicArtwork): Artwork {
+//   const syntheticPrice = 500 + (item.id % 95) * 50
+//   const fallbackText = "From the Art Institute of Chicago."
+//   const cleanedDescription = item.description?.trim() || fallbackText
 
+//   return {
+//     id: `aic-${item.id}`,
+//     title: item.title || "Untitled",
+//     artist: item.artist || "Unknown Artist",
+//     price: syntheticPrice,
+//     dateCreated: item.date || "Unknown",
+//     medium: "Collection Piece",
+//     dimensions: "Not specified",
+//     purpose: fallbackText,
+//     description: cleanedDescription,
+//     museumsExhibited: ["The Art Institute of Chicago"],
+//     image: item.imageUrl || "",
+//   }
+// }
+function mapDbArtworkToStoreArtwork(item: any): Artwork {
   return {
-    id: `aic-${item.id}`,
+    id: item.id,
     title: item.title || "Untitled",
     artist: item.artist || "Unknown Artist",
-    price: syntheticPrice,
-    dateCreated: item.date || "Unknown",
-    medium: "Collection Piece",
-    dimensions: "Not specified",
-    purpose: fallbackText,
-    description: cleanedDescription,
-    museumsExhibited: ["The Art Institute of Chicago"],
-    image: item.imageUrl || "",
+    price: item.price || 500,
+    dateCreated: item.created_at || "Unknown",
+    medium: item.medium || "Artwork",
+    dimensions: item.dimensions || "Not specified",
+    purpose: item.purpose || "Gallery piece",
+    description: item.description || "",
+    museumsExhibited: ["AEMS Collection"],
+    image: item.image || item.image_url || "",
   }
 }
-
 
 export default function CustomerDashboard() {
   const navigate = useNavigate()
@@ -133,22 +147,25 @@ export default function CustomerDashboard() {
 
       try {
         const params = new URLSearchParams({ page: String(page), limit: String(limit) })
-        const response = await fetch(`${API_BASE}/aic/?${params.toString()}`)
+        const response = await fetch(`${API_BASE}/`)
 
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`)
         }
 
-        const payload: AicArtworksResponse = await response.json()
-        const mapped = (payload.data || []).map(mapAicArtworkToStoreArtwork)
+        const payload = await response.json()
+
+        const mapped = (payload || []).map(mapDbArtworkToStoreArtwork)
+
+      // since no pagination yet
 
         if (!isCancelled) {
           setArtworks(mapped)
-          setTotalPages(payload.pagination?.total_pages || 1)
+          setTotalPages(1) 
         }
       } catch {
         if (!isCancelled) {
-          setArtError("Could not load artworks from the Art Institute API.")
+          setArtError("Could not load artworks from database.")
         }
       } finally {
         if (!isCancelled) {

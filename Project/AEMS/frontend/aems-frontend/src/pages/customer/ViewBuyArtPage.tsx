@@ -58,11 +58,12 @@ export default function ViewBuyArtPage() {
           price: item.price ?? 500,
           category: item.category || "Collection Piece",
           description: item.description || "",
-          image: item.image || "",
+          image: item.image || "https://via.placeholder.com/300",
           modelUrl: item.model_3d || null,
         }));
 
         setArtworks(mapped);
+        console.log("MAPPED:", mapped);
       } catch (err) {
         console.error("ERROR:", err);
         setLoadError("Failed to load artworks");
