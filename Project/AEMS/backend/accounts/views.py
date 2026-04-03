@@ -191,6 +191,29 @@ def exhibitions_stats(request):
         "past": past
     })
 
+
+@api_view(["GET", "PUT", "DELETE"])
+def exhibition_detail(request, pk):
+    try:
+        exhibition = Exhibition.objects.get(pk=pk)
+    except Exhibition.DoesNotExist:
+        return Response({'error': 'Not found'}, status=status.HTTP_404_NOT_FOUND)
+
+    if request.method == 'GET':
+        serializer = ExhibitionSerializer(exhibition)
+        return Response(serializer.data)
+
+    if request.method == 'PUT':
+        serializer = ExhibitionSerializer(exhibition, data=request.data, partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    if request.method == 'DELETE':
+        exhibition.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 @api_view(['GET'])
 def import_aic_artworks(request):
     url = "https://api.artic.edu/api/v1/artworks?page=1&limit=20"

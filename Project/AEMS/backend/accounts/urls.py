@@ -16,6 +16,7 @@ urlpatterns = [
     path('logout/', views.logout_view, name='logout'),
     path('profile/', views.profile_view, name='profile'),
     path("exhibitions/", exhibitions_list_create, name="exhibitions-list-create"),
+    path('exhibitions/<int:pk>/', views.exhibition_detail, name='exhibitions-detail'),
     path("exhibitions/stats/", exhibitions_stats, name="exhibitions-stats"),
     path('', include(router.urls)),
     path('uploads/', upload_file),

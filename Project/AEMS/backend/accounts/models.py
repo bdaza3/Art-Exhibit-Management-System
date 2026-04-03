@@ -14,6 +14,7 @@ class Exhibition(models.Model):
     venue = models.CharField(max_length=255)
     location = models.CharField(max_length=255)
     date = models.DateField()
+    image = models.URLField(max_length=1000, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
 

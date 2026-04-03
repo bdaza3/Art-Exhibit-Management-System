@@ -77,12 +77,12 @@ export default function AdminDashboard() {
           totalSales,
         })
 
-        // upcoming exhibitions (by start date)
+        // upcoming exhibitions (by date)
         if (Array.isArray(exList)) {
           const now = new Date()
           const upcomingSorted = exList
-            .filter((e: any) => e.start_date && new Date(e.start_date) >= now)
-            .sort((a: any, b: any) => new Date(a.start_date).getTime() - new Date(b.start_date).getTime())
+            .filter((e: any) => (e.date || e.start_date) && new Date(e.date || e.start_date) >= now)
+            .sort((a: any, b: any) => new Date(a.date || a.start_date).getTime() - new Date(b.date || b.start_date).getTime())
             .slice(0, 5)
           setUpcoming(upcomingSorted)
         }
@@ -160,13 +160,14 @@ export default function AdminDashboard() {
                 <div style={{ marginTop: 10 }}>
                   {upcoming.length === 0 && <p className="muted">No upcoming exhibitions.</p>}
                   {upcoming.map((e: any) => (
-                    <div key={e.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <div>
-                        <div style={{ fontWeight: 600 }}>{e.title}</div>
-                        <div className="muted">Starts {e.start_date ? formatRelativeTime(e.start_date) : '—'}</div>
+                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                      <div style={{ width: 84, height: 54, flex: '0 0 84px', borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,0.02)' }}>
+                        {e.image ? <img src={e.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.45)' }}>No image</div>}
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <Button component={Link} to={`/admin/events/${e.id}`} size="small" sx={{ bgcolor: '#d4af37', color: '#000', textTransform: 'none' }}>Open</Button>
+
+                      <div style={{ flex: 1 }}>
+                        <div style={{ fontWeight: 600, color: '#fff' }}>{e.title}</div>
+                        <div className="muted">Starts {e.date ? formatRelativeTime(e.date) : (e.start_date ? formatRelativeTime(e.start_date) : '—')}</div>
                       </div>
                     </div>
                   ))}
