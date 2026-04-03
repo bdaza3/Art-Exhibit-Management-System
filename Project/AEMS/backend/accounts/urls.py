@@ -8,6 +8,8 @@ router.register(r'artworks', ArtworkViewSet)
 router.register(r'auctions', AuctionViewSet)
 router.register(r'bids', BidViewSet)
 
+from .views import upload_file
+
 urlpatterns = [
     path('register/', views.register_view, name='register'),
     path('login/', views.login_view, name='login'),
@@ -16,5 +18,6 @@ urlpatterns = [
     path("exhibitions/", exhibitions_list_create, name="exhibitions-list-create"),
     path("exhibitions/stats/", exhibitions_stats, name="exhibitions-stats"),
     path('', include(router.urls)),
+    path('uploads/', upload_file),
     path('import-aic/', import_aic_artworks),
 ]

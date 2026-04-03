@@ -27,9 +27,9 @@ class Artwork(models.Model):
     artist = models.CharField(max_length=255, blank=True, null=True)
     price = models.FloatField(default=0)
     category = models.CharField(max_length=255, blank=True, null=True)
-    image = models.URLField(blank=True, null=True)
+    image = models.URLField(max_length=1000, blank=True, null=True)
     description = models.TextField(blank=True, null=True)
-    model_3d = models.URLField(blank=True, null=True)
+    model_3d = models.URLField(max_length=1000, blank=True, null=True)
     STATUS_CHOICES = [
         ("available", "Available"),
         ("sold", "Sold"),

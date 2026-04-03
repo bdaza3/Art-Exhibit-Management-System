@@ -11,6 +11,11 @@ from .serializers import ExhibitionSerializer
 from django.utils import timezone
 import requests
 from rest_framework.decorators import api_view
+from django.views.decorators.csrf import csrf_exempt
+from django.core.files.storage import default_storage
+from django.core.files.base import ContentFile
+from django.conf import settings
+import os
 from rest_framework.response import Response
 from .models import Artwork
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer
@@ -219,3 +224,33 @@ def import_aic_artworks(request):
         "count": len(created),
         "items": created
     })
+
+
+@csrf_exempt
+@api_view(['POST'])
+def upload_file(request):
+    """Simple upload endpoint that accepts a single file in 'file' field and returns its public URL."""
+    f = request.FILES.get('file')
+    if not f:
+        return Response({'error': 'No file provided'}, status=400)
+
+    # create uploads directory
+    upload_dir = os.path.join(settings.MEDIA_ROOT, 'uploads')
+    os.makedirs(upload_dir, exist_ok=True)
+
+    filename = f.name
+    save_path = os.path.join('uploads', filename)
+
+    # ensure unique filename
+    base, ext = os.path.splitext(filename)
+    counter = 1
+    while default_storage.exists(save_path):
+        filename = f"{base}-{counter}{ext}"
+        save_path = os.path.join('uploads', filename)
+        counter += 1
+
+    # save file
+    path = default_storage.save(save_path, ContentFile(f.read()))
+
+    url = request.build_absolute_uri(settings.MEDIA_URL + path)
+    return Response({'url': url})

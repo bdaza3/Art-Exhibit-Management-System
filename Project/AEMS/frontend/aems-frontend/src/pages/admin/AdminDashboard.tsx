@@ -107,7 +107,7 @@ export default function AdminDashboard() {
       <div className="admin-page">
         <div className="dash-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <div>
-            <h1 style={{ margin: 0 }}>Welcome back, {username} 🎨</h1>
+            <h1 style={{ margin: 0 }}>Welcome back, {username}.</h1>
             <p className="muted">Here's the latest snapshot of your gallery and upcoming events.</p>
           </div>
 

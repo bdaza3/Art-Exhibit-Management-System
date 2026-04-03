@@ -24,6 +24,8 @@ export default function AdminArtworks() {
   const [query, setQuery] = useState("");
   const [categoryFilter, setCategoryFilter] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [modelFile, setModelFile] = useState<File | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Artwork | null>(null);
@@ -63,6 +65,7 @@ export default function AdminArtworks() {
   const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files && e.target.files[0];
     if (!f) return;
+    setImageFile(f);
     const reader = new FileReader();
     reader.onload = () => {
       setForm((prev) => ({ ...prev, image: reader.result as string }));
@@ -77,9 +80,23 @@ export default function AdminArtworks() {
     reader.onload = () => {
       // store model as data-url so it can be previewed or sent to backend
       setForm((prev) => ({ ...prev, model_3d: reader.result as string }));
+      setModelFile(f);
     };
     reader.readAsDataURL(f);
   };
+
+  async function uploadFileToServer(file: File) {
+    const fd = new FormData();
+    fd.append('file', file);
+    const uploadUrl = API_BASE.replace(/artworks\/?$/, 'uploads/');
+    const res = await fetch(uploadUrl, { method: 'POST', body: fd, credentials: 'include' });
+    if (!res.ok) {
+      const text = await res.text().catch(() => '');
+      throw new Error(`Upload failed: ${res.status} ${text}`);
+    }
+    const j = await res.json();
+    return j.url;
+  }
 
   const handleSubmit = async (e: any) => {
   e.preventDefault();
@@ -92,25 +109,56 @@ export default function AdminArtworks() {
 
   try {
    
+    // prepare payload and upload files if provided
+    const payload = { ...form } as any;
+
+    if (imageFile) {
+      try {
+        payload.image = await uploadFileToServer(imageFile);
+      } catch (err) {
+        console.error('Image upload failed', err);
+        alert('Image upload failed: ' + String(err));
+        return;
+      }
+    }
+
+    if (modelFile) {
+      try {
+        payload.model_3d = await uploadFileToServer(modelFile);
+      } catch (err) {
+        console.error('Model upload failed', err);
+        alert('Model upload failed: ' + String(err));
+        return;
+      }
+    }
+
     const tempArt = {
-      ...form,
+      ...payload,
       id: Date.now(), // temporary id
     };
 
     setArtworks((prev) => [tempArt, ...prev]);
 
-    
     const res = await fetch(API_BASE, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify(form),
+      credentials: 'include',
+      body: JSON.stringify(payload),
     });
 
-    
     if (!res.ok) {
-      console.warn("Backend save failed, UI still updated");
+      // attempt to read JSON validation errors or text for diagnostics
+      let bodyText = "";
+      try {
+        const j = await res.json();
+        bodyText = JSON.stringify(j);
+      } catch (e) {
+        bodyText = await res.text().catch(() => "(no body)");
+      }
+      console.error("Artwork POST failed", res.status, bodyText);
+      alert(`Failed to save artwork: ${res.status} ${bodyText}`);
       return;
     }
 
@@ -154,6 +202,28 @@ export default function AdminArtworks() {
     if (!editForm || !editForm.id) return;
 
     try {
+      // if an image file was selected, upload it first and set form.image to returned URL
+      if (imageFile) {
+        try {
+          const url = await uploadFileToServer(imageFile);
+          form.image = url;
+        } catch (err) {
+          console.error('Image upload failed', err);
+          alert('Image upload failed: ' + String(err));
+          return;
+        }
+      }
+
+      if (modelFile) {
+        try {
+          const url = await uploadFileToServer(modelFile);
+          form.model_3d = url;
+        } catch (err) {
+          console.error('Model upload failed', err);
+          alert('Model upload failed: ' + String(err));
+          return;
+        }
+      }
       const res = await fetch(`${API_BASE}${editForm.id}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
