@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import AdminSideBar from "../../components/admin/AdminSideBar";
 import "./AdminReports.css";
 
@@ -32,8 +32,40 @@ function pct(n: number) {
 export default function AdminReports() {
   const [range, setRange] = useState<Range>("30d");
   const [category, setCategory] = useState<Category>("All");
+  const [backendMetrics, setBackendMetrics] = useState<any | null>(null);
 
-  // --- Fake aggregated metrics (replace later with backend) -- store in the backend database
+  useEffect(() => {
+    let mounted = true;
+
+    async function fetchMetrics() {
+      try {
+        const [ordersRes, aucRes, ticketsRes] = await Promise.all([
+          fetch("/api/orders/"),
+          fetch("/api/auctions/"),
+          fetch("/api/tickets/"),
+        ]);
+
+        const orders = ordersRes.ok ? await ordersRes.json() : [];
+        const auctions = aucRes.ok ? await aucRes.json() : [];
+        const tickets = ticketsRes.ok ? await ticketsRes.json() : [];
+
+        const revenue = Array.isArray(orders) ? orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0) : 0;
+        const ordersCount = Array.isArray(orders) ? orders.length : 0;
+        const auctionsActive = Array.isArray(auctions) ? auctions.filter((a: any) => a.status === "active").length : 0;
+        const ticketCount = Array.isArray(tickets) ? tickets.length : 0;
+        const customers = Array.isArray(orders) ? new Set(orders.map((o: any) => o.customer)).size : 0;
+
+        if (mounted) setBackendMetrics({ revenue, orders: ordersCount, tickets: ticketCount, auctions: auctionsActive, customers });
+      } catch (err) {
+        console.warn("Failed to fetch backend metrics", err);
+      }
+    }
+
+    fetchMetrics();
+    return () => { mounted = false };
+  }, [range, category]);
+
+  // --- Fake aggregated metrics (used as fallback)
   const metrics = useMemo(() => {
    
     const mult = range === "7d" ? 0.35 : range === "30d" ? 1 : range === "90d" ? 2.4 : 3.1;
@@ -65,6 +97,8 @@ export default function AdminReports() {
 
     return base;
   }, [range, category]);
+
+  const display = backendMetrics ? { ...backendMetrics, revDelta: 0, ordersDelta: 0, ticketsDelta: 0, auctionsDelta: 0, customersDelta: 0 } : metrics;
 
   const revenueByMonth = useMemo(() => {
     
@@ -164,11 +198,11 @@ export default function AdminReports() {
 
         {/* KPI grid */}
         <div className="kpi-grid">
-          <KPI title="Revenue" value={money(metrics.revenue)} delta={metrics.revDelta} />
-          <KPI title="Orders" value={metrics.orders.toLocaleString()} delta={metrics.ordersDelta} />
-          <KPI title="Tickets Sold" value={metrics.tickets.toLocaleString()} delta={metrics.ticketsDelta} />
-          <KPI title="Active Auctions" value={metrics.auctions.toLocaleString()} delta={metrics.auctionsDelta} />
-          <KPI title="New Customers" value={metrics.customers.toLocaleString()} delta={metrics.customersDelta} />
+          <KPI title="Revenue" value={money(display.revenue)} delta={display.revDelta ?? 0} />
+          <KPI title="Orders" value={(display.orders || 0).toLocaleString()} delta={display.ordersDelta ?? 0} />
+          <KPI title="Tickets Sold" value={(display.tickets || 0).toLocaleString()} delta={display.ticketsDelta ?? 0} />
+          <KPI title="Active Auctions" value={(display.auctions || 0).toLocaleString()} delta={display.auctionsDelta ?? 0} />
+          <KPI title="New Customers" value={(display.customers || 0).toLocaleString()} delta={display.customersDelta ?? 0} />
         </div>
 
         {/* Main grid */}
@@ -176,7 +210,7 @@ export default function AdminReports() {
           <section className="panel">
             <div className="panel-top">
               <h3>Revenue Trend</h3>
-              <span className="muted small">Mock data • Replace with backend later</span>
+              <span className="muted small">{backendMetrics ? 'Using backend metrics' : 'Mock data • Replace with backend later'}</span>
             </div>
 
             <div className="spark">

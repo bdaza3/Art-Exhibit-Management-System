@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useState } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./CartPage.css";
 
 type CartItem = {
@@ -34,6 +34,7 @@ export default function CartPage() {
   const [initialized, setInitialized] = useState(false);
 
   const location = useLocation();
+  const navigate = useNavigate();
 
   // ✅ mark initialized after first mount
   useEffect(() => {
@@ -98,7 +99,9 @@ export default function CartPage() {
   }
 
   function checkout() {
-    alert("Checkout coming soon....");
+    // route to payments page (MakePaymentsPage) which contains the checkout flow
+    if (items.length === 0) return;
+    navigate("/customer/payments");
   }
 
   return (

@@ -14,6 +14,7 @@ import {
   TextField,
   Box,
 } from "@mui/material";
+import "./AdminDashboard.css";
 const darkInputSx = {
   "& .MuiOutlinedInput-root": {
     borderRadius: "16px",
@@ -60,14 +61,21 @@ type Stats = {
   past: number;
 };
 
-const API_BASE = "http://127.0.0.1:8000/api/auth";
+const API_BASE = "http://127.0.0.1:8000/api";
 
-export default function AdminEvents() {
-  const [open, setOpen] = useState(false);
+export default function AdminExhibitions() {
+  const [openNew, setOpenNew] = useState(false);
+  const [openEdit, setOpenEdit] = useState(false);
   const [exhibitions, setExhibitions] = useState<Exhibition[]>([]);
   const [stats, setStats] = useState<Stats>({ total: 0, upcoming: 0, past: 0 });
+  const [query, setQuery] = useState("");
+  const [filter, setFilter] = useState<"all" | "upcoming" | "past">("all");
+  const [page, setPage] = useState(0);
+  const [pageSize, setPageSize] = useState(6);
+  const [loading, setLoading] = useState(false);
 
   const [formData, setFormData] = useState({
+    id: undefined as number | undefined,
     title: "",
     venue: "",
     location: "",
@@ -76,15 +84,20 @@ export default function AdminEvents() {
   });
 
   useEffect(() => {
-    fetchExhibitions();
-    fetchStats();
+    refresh();
   }, []);
+
+  const refresh = async () => {
+    setLoading(true);
+    await Promise.all([fetchExhibitions(), fetchStats()]);
+    setLoading(false);
+  };
 
   const fetchExhibitions = async () => {
     try {
       const res = await fetch(`${API_BASE}/exhibitions/`);
       const data = await res.json();
-      setExhibitions(data);
+      setExhibitions(Array.isArray(data) ? data : []);
     } catch (error) {
       console.error("Error fetching exhibitions:", error);
     }
@@ -100,289 +113,176 @@ export default function AdminEvents() {
     }
   };
 
-  const handleOpen = () => setOpen(true);
-
-  const handleClose = () => {
-    setOpen(false);
-    setFormData({
-      title: "",
-      venue: "",
-      location: "",
-      date: "",
-      description: "",
-    });
+  const openCreate = () => {
+    setFormData({ id: undefined, title: "", venue: "", location: "", date: "", description: "" });
+    setOpenNew(true);
   };
 
-  const handleChange = (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
+  const openForEdit = (ex: Exhibition) => {
+    setFormData({ id: ex.id, title: ex.title, venue: ex.venue, location: ex.location, date: ex.date, description: ex.description });
+    setOpenEdit(true);
+  };
+
+  const closeDialogs = () => {
+    setOpenNew(false);
+    setOpenEdit(false);
+    setFormData({ id: undefined, title: "", venue: "", location: "", date: "", description: "" });
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  const handleSave = async () => {
+  const handleCreate = async () => {
     if (!formData.title || !formData.venue || !formData.location || !formData.date) {
-      alert("Please fill in all required fields.");
+      alert("Please fill required fields.");
       return;
     }
 
     try {
       const res = await fetch(`${API_BASE}/exhibitions/`, {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formData.title, venue: formData.venue, location: formData.location, date: formData.date, description: formData.description }),
       });
-
-      if (!res.ok) {
-        const err = await res.json();
-        console.error("Backend validation error:", err);
-        alert("Failed to save exhibition.");
-        return;
-      }
-
-      await fetchExhibitions();
-      await fetchStats();
-      handleClose();
-    } catch (error) {
-      console.error("Error saving exhibition:", error);
-      alert("Something went wrong while saving.");
+      if (!res.ok) throw new Error("Failed to create");
+      await refresh();
+      closeDialogs();
+    } catch (err) {
+      console.error(err);
+      alert("Save failed.");
     }
   };
 
+  const handleUpdate = async () => {
+    if (!formData.id) return;
+    try {
+      const res = await fetch(`${API_BASE}/exhibitions/${formData.id}/`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ title: formData.title, venue: formData.venue, location: formData.location, date: formData.date, description: formData.description }),
+      });
+      if (!res.ok) throw new Error("Failed to update");
+      await refresh();
+      closeDialogs();
+    } catch (err) {
+      console.error(err);
+      alert("Update failed.");
+    }
+  };
+
+  const handleDelete = async (id?: number) => {
+    if (!id) return;
+    if (!confirm("Delete this exhibition?")) return;
+    try {
+      const res = await fetch(`${API_BASE}/exhibitions/${id}/`, { method: "DELETE" });
+      if (res.ok) await refresh(); else throw new Error("Delete failed");
+    } catch (err) {
+      console.error(err);
+      alert("Delete failed.");
+    }
+  };
+
+  const filtered = exhibitions.filter((e) => {
+    if (filter === "upcoming" && new Date(e.date) < new Date()) return false;
+    if (filter === "past" && new Date(e.date) >= new Date()) return false;
+    if (!query) return true;
+    const q = query.toLowerCase();
+    return (e.title || "").toLowerCase().includes(q) || (e.venue || "").toLowerCase().includes(q) || (e.location || "").toLowerCase().includes(q);
+  });
+
+  const paged = filtered.slice(page * pageSize, page * pageSize + pageSize);
+
   return (
-    <div className="dashboard-layout">
+    <div style={{ display: "flex" }}>
       <AdminSideBar />
 
-      <div className="dashboard-content">
-        <h2>Exhibitions</h2>
-        <p>Manage exhibitions here.</p>
+      <div className="admin-page">
+        <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h2 style={{ margin: 0 }}>Exhibitions</h2>
+            <div className="muted">Manage exhibitions — create, edit, and organize events.</div>
+          </div>
 
-        <Container disableGutters>
-          <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-            Exhibition Statistics
-          </Typography>
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+            <Button variant="outlined" onClick={() => refresh()} sx={{ textTransform: "none" }}>Refresh</Button>
+            <Button variant="contained" onClick={openCreate} sx={{ bgcolor: "#d4af37", color: "#000", textTransform: "none" }}>New Exhibition</Button>
+          </div>
+        </div>
 
-          <Grid container spacing={2} alignItems="stretch">
-            <Grid >
-              <Card sx={{ minWidth: 180 }}>
+        <div style={{ display: "flex", gap: 12, marginTop: 18, alignItems: "center" }}>
+          <TextField placeholder="Search title, venue or location" size="small" value={query} onChange={(e) => { setQuery(e.target.value); setPage(0); }} sx={{ width: 420 }} />
+          <select value={filter} onChange={(e) => { setFilter(e.target.value as any); setPage(0); }} style={{ padding: 8, borderRadius: 8, background: "rgba(255,255,255,0.04)", color: "#fff", border: "1px solid rgba(212,175,55,0.18)" }}>
+            <option value="all">All</option>
+            <option value="upcoming">Upcoming</option>
+            <option value="past">Past</option>
+          </select>
+        </div>
+
+        <div style={{ marginTop: 18 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 16 }}>
+            {paged.map((ex) => (
+              <Card key={ex.id} sx={{ background: "rgba(255,255,255,0.02)", border: "1px solid rgba(255,255,255,0.03)" }}>
                 <CardContent>
-                  <Typography variant="h5">{stats.total}</Typography>
-                  <Typography color="text.secondary">
-                    Total Exhibitions
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid >
-              <Card sx={{ minWidth: 200 }}>
-                <CardContent>
-                  <Typography variant="h5">{stats.upcoming}</Typography>
-                  <Typography color="text.secondary">
-                    Upcoming Exhibitions
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid >
-              <Card sx={{ minWidth: 180 }}>
-                <CardContent>
-                  <Typography variant="h5">{stats.past}</Typography>
-                  <Typography color="text.secondary">
-                    Past Exhibitions
-                  </Typography>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid >
-              <Button
-                variant="contained"
-                color="primary"
-                sx={{ height: "100%", minHeight: 88, px: 4 }}
-                onClick={handleOpen}
-              >
-                Add New Exhibition
-              </Button>
-            </Grid>
-          </Grid>
-
-          <Box sx={{ mt: 4 }}>
-            <Typography variant="h6" gutterBottom>
-              Exhibition List
-            </Typography>
-
-            <Grid container spacing={2}>
-              {exhibitions.map((ex) => (
-                <Grid size={{ xs: 12, sm: 6, md: 3 }}>
-                  <Card>
-                    <CardContent>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                    <div>
                       <Typography variant="h6">{ex.title}</Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {ex.venue}
-                      </Typography>
-                      <Typography variant="body2" color="text.secondary">
-                        {ex.location}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        Date: {ex.date}
-                      </Typography>
-                      <Typography variant="body2" sx={{ mt: 1 }}>
-                        {ex.description}
-                      </Typography>
-                    </CardContent>
-                  </Card>
-                </Grid>
-              ))}
-            </Grid>
-          </Box>
-        </Container>
+                      <Typography color="text.secondary">{ex.venue} — {ex.location}</Typography>
+                      <Typography sx={{ mt: 1 }}>{new Date(ex.date).toLocaleDateString()}</Typography>
+                      <Typography sx={{ mt: 1, color: "rgba(255,255,255,0.7)" }}>{ex.description}</Typography>
+                    </div>
 
-       <Dialog
-  open={open}
-  onClose={handleClose}
-  fullWidth
-  maxWidth="sm"
-  PaperProps={{
-    sx: {
-      background: "linear-gradient(180deg, rgba(12,12,12,0.96), rgba(18,18,18,0.98))",
-      color: "#f5f5f5",
-      border: "1px solid rgba(212,175,55,0.28)",
-      borderRadius: "22px",
-      boxShadow: "0 20px 60px rgba(0,0,0,0.55)",
-      backdropFilter: "blur(18px)",
-      px: 1,
-      py: 1,
-    },
-  }}
->
-  <DialogTitle
-    sx={{
-      fontSize: "28px",
-      fontWeight: 700,
-      color: "#fff",
-      pb: 0.5,
-    }}
-  >
-    Add New Exhibition
-  </DialogTitle>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 8, marginLeft: 12 }}>
+                      <Button size="small" onClick={() => openForEdit(ex)} sx={{ textTransform: "none" }}>Edit</Button>
+                      <Button size="small" onClick={() => handleDelete(ex.id)} sx={{ color: "#ff6b6b", textTransform: "none" }}>Delete</Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
 
-  <DialogContent
-    sx={{
-      display: "flex",
-      flexDirection: "column",
-      gap: 2.2,
-      pt: 2,
-    }}
-  >
-    <Typography
-      sx={{
-        color: "rgba(255,255,255,0.7)",
-        fontSize: "14px",
-        mb: 1,
-      }}
-    >
-      Create and publish a new exhibition for customers to discover.
-    </Typography>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18 }}>
+            <div className="muted">Showing {filtered.length} results</div>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <Button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} sx={{ textTransform: "none" }}>Prev</Button>
+              <div className="muted">Page {page + 1} of {Math.max(1, Math.ceil(filtered.length / pageSize))}</div>
+              <Button disabled={(page + 1) * pageSize >= filtered.length} onClick={() => setPage((p) => p + 1)} sx={{ textTransform: "none" }}>Next</Button>
+            </div>
+          </div>
+        </div>
 
-    <TextField
-      label="Exhibition Title"
-      name="title"
-      value={formData.title}
-      onChange={handleChange}
-      fullWidth
-      required
-      variant="outlined"
-      sx={darkInputSx}
-    />
+        {/* New Exhibition Dialog */}
+        <Dialog open={openNew} onClose={closeDialogs} fullWidth maxWidth="sm">
+          <DialogTitle>Add Exhibition</DialogTitle>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+            <TextField label="Title" name="title" value={formData.title} onChange={handleChange} fullWidth />
+            <TextField label="Venue" name="venue" value={formData.venue} onChange={handleChange} fullWidth />
+            <TextField label="Location" name="location" value={formData.location} onChange={handleChange} fullWidth />
+            <TextField label="Date" name="date" type="date" InputLabelProps={{ shrink: true }} value={formData.date} onChange={handleChange} fullWidth />
+            <TextField label="Description" name="description" value={formData.description} onChange={handleChange} fullWidth multiline rows={3} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDialogs}>Cancel</Button>
+            <Button variant="contained" onClick={handleCreate} sx={{ bgcolor: "#d4af37", color: "#000" }}>Create</Button>
+          </DialogActions>
+        </Dialog>
 
-    <TextField
-      label="Venue"
-      name="venue"
-      value={formData.venue}
-      onChange={handleChange}
-      fullWidth
-      required
-      variant="outlined"
-      sx={darkInputSx}
-    />
-
-    <TextField
-      label="Location"
-      name="location"
-      value={formData.location}
-      onChange={handleChange}
-      fullWidth
-      required
-      variant="outlined"
-      sx={darkInputSx}
-    />
-
-    <TextField
-      label="Date"
-      name="date"
-      type="date"
-      value={formData.date}
-      onChange={handleChange}
-      InputLabelProps={{ shrink: true }}
-      fullWidth
-      required
-      variant="outlined"
-      sx={darkInputSx}
-    />
-
-    <TextField
-      label="Description"
-      name="description"
-      value={formData.description}
-      onChange={handleChange}
-      multiline
-      rows={4}
-      fullWidth
-      variant="outlined"
-      sx={darkInputSx}
-    />
-  </DialogContent>
-
-  <DialogActions sx={{ px: 3, pb: 2.5, pt: 1 }}>
-    <Button
-      onClick={handleClose}
-      sx={{
-        color: "rgba(255,255,255,0.75)",
-        borderRadius: "12px",
-        px: 2.5,
-        py: 1,
-        textTransform: "none",
-        fontWeight: 600,
-      }}
-    >
-      Cancel
-    </Button>
-
-    <Button
-      variant="contained"
-      onClick={handleSave}
-      sx={{
-        background: "linear-gradient(135deg, #d4af37, #b8922f)",
-        color: "#111",
-        borderRadius: "14px",
-        px: 3,
-        py: 1.2,
-        fontWeight: 700,
-        textTransform: "none",
-        boxShadow: "0 8px 22px rgba(212,175,55,0.28)",
-        "&:hover": {
-          background: "linear-gradient(135deg, #e0bc4a, #c49a31)",
-          boxShadow: "0 10px 26px rgba(212,175,55,0.38)",
-        },
-      }}
-    >
-      Save Exhibition
-    </Button>
-  </DialogActions>
-</Dialog>
+        {/* Edit Dialog */}
+        <Dialog open={openEdit} onClose={closeDialogs} fullWidth maxWidth="sm">
+          <DialogTitle>Edit Exhibition</DialogTitle>
+          <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>
+            <TextField label="Title" name="title" value={formData.title} onChange={handleChange} fullWidth />
+            <TextField label="Venue" name="venue" value={formData.venue} onChange={handleChange} fullWidth />
+            <TextField label="Location" name="location" value={formData.location} onChange={handleChange} fullWidth />
+            <TextField label="Date" name="date" type="date" InputLabelProps={{ shrink: true }} value={formData.date} onChange={handleChange} fullWidth />
+            <TextField label="Description" name="description" value={formData.description} onChange={handleChange} fullWidth multiline rows={3} />
+          </DialogContent>
+          <DialogActions>
+            <Button onClick={closeDialogs}>Cancel</Button>
+            <Button variant="contained" onClick={handleUpdate} sx={{ bgcolor: "#d4af37", color: "#000" }}>Save</Button>
+          </DialogActions>
+        </Dialog>
       </div>
     </div>
   );

@@ -120,8 +120,9 @@
 .preview-actions input[type="file"] { width: 100%; }
 
 .form-fields { display: flex; flex-direction: column; gap: 10px; }
-.row label { display:block; font-size:12px; color:#ccc; margin-bottom:6px }
-.row input, .row textarea { width:100%; }
+.row { display: flex; flex-direction: column; gap: 8px; }
+.row label { display:block; font-size:13px; color:#ccc; margin:0; font-weight:600 }
+.row input, .row textarea { width:100%; margin-top:6px }
 .two-col { display:flex; gap:12px }
 .two-col > div { flex:1 }
 .row.actions { display:flex; gap:12px; align-items:center }

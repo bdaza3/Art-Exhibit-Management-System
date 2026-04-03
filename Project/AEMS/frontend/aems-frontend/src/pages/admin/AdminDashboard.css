@@ -7,21 +7,22 @@
 
 .management-grid {
   width: 100%;
-  max-width: 1100px;
+  max-width: 1400px;
 }
 
 .management-card {
-  padding: 14px;
-  border-radius: 14px;
-  background: linear-gradient(135deg, rgba(212,175,55,0.06), rgba(16,16,16,0.7));
-  border: 1px solid rgba(212,175,55,0.22);
-  height: 140px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: linear-gradient(180deg, rgba(8,8,10,0.95), rgba(6,6,8,0.99)) !important;
+  border: 1px solid rgba(255,255,255,0.03) !important;
+  height: 100px;
   display: flex;
   align-items: center;
-  width: 240px;
-  min-width: 220px;
+  width: 200px;
+  min-width: 180px;
   box-sizing: border-box;
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  color: #ddd;
 }
 
 .management-card .m-icon {
@@ -65,8 +66,55 @@
 .management-grid {
   display: flex;
   flex-wrap: wrap;
-  gap: 22px;
-  justify-content: center;
+  gap: 12px 14px;
+  justify-content: flex-start;
+  align-items: flex-start;
+}
+
+.dash-header h1 { font-size: 28px; margin-bottom: 6px }
+.dash-header .muted { margin: 0; color: rgba(255,255,255,0.65) }
+
+.management-card { min-height: 90px }
+
+.panel-card {
+  width: 100% !important;
+  min-height: 160px;
+  padding: 12px !important;
+  background: linear-gradient(180deg, rgba(6,6,8,0.98), rgba(10,10,12,1)) !important;
+  border: 1px solid rgba(255,255,255,0.04) !important;
+}
+
+/* Ensure MUI Paper children don't override dark panel backgrounds */
+.management-card.MuiPaper-root:not(.panel-card),
+.management-card.MuiPaper-root:not(.panel-card) * {
+  background: transparent !important;
+  color: inherit !important;
+}
+
+/* Small analytics metric cards */
+.analytics-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 18px }
+.metric-small { padding: 10px; border-radius: 10px; background: linear-gradient(180deg, rgba(12,12,14,0.95), rgba(8,8,10,0.98)); border:1px solid rgba(255,255,255,0.03); min-height:72px }
+.metric-small .label { font-size: 12px; color: rgba(255,255,255,0.7) }
+.metric-small .value { font-size: 18px; font-weight:700; margin-top:6px }
+
+.analytics-bottom { display: grid; grid-template-columns: 2fr 1fr; gap: 16px; margin-top: 16px }
+.chart-placeholder { height: 220px; border-radius: 12px; background: linear-gradient(180deg, rgba(6,6,8,0.95), rgba(10,10,12,0.98)); border:1px solid rgba(255,255,255,0.04); display:flex; align-items:center; justify-content:center; color:rgba(255,255,255,0.5) }
+.top-list { border-radius: 12px; padding: 10px; background: linear-gradient(180deg, rgba(6,6,8,0.95), rgba(10,10,12,0.98)); border:1px solid rgba(255,255,255,0.04); }
+
+@media (max-width: 900px) {
+  .analytics-grid { grid-template-columns: repeat(2, 1fr) }
+  .analytics-bottom { grid-template-columns: 1fr }
+}
+
+.admin-page .management-grid { align-items: stretch }
+
+.muted { color: rgba(255,255,255,0.6) }
+
+@media (max-width: 900px) {
+  .admin-page { padding: 20px }
+  .management-grid { justify-content: center }
+  .dash-header { flex-direction: column; gap: 10px }
+  .management-grid > .management-card { width: 100% }
 }
 
 .management-grid > .MuiGrid-root {
@@ -75,6 +123,8 @@
 }
 
 .management-card:hover {
-  transform: translateY(-6px);
-  box-shadow: 0 12px 30px rgba(212,175,55,0.12);
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.6);
 }
+
+.management-grid .management-card > div > .muted { color: rgba(255,255,255,0.55) }

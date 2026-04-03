@@ -70,6 +70,17 @@ export default function AdminArtworks() {
     reader.readAsDataURL(f);
   };
 
+  const handleModelFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      // store model as data-url so it can be previewed or sent to backend
+      setForm((prev) => ({ ...prev, model_3d: reader.result as string }));
+    };
+    reader.readAsDataURL(f);
+  };
+
   const handleSubmit = async (e: any) => {
   e.preventDefault();
 
@@ -199,6 +210,14 @@ export default function AdminArtworks() {
       <div className="admin-page">
         <h1 className="admin-title">Manage Artworks</h1>
         
+        <div className="list-controls">
+          <input className="search" placeholder="Search title, artist, description..." value={query} onChange={(e) => setQuery(e.target.value)} />
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="">All categories</option>
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+        
         <div className="art-form">
           <div className="form-grid">
             <div className="form-preview">
@@ -212,7 +231,7 @@ export default function AdminArtworks() {
 
               <div className="preview-actions">
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} />
-                <small className="muted">Or paste an image URL below</small>
+                {/* <small className="muted">Or paste an image URL below</small> */}
               </div>
             </div>
 
@@ -243,12 +262,11 @@ export default function AdminArtworks() {
                 <div>
                   <label>3D Model URL</label>
                   <input name="model_3d" placeholder=".glb URL" value={form.model_3d || ""} onChange={handleChange} />
+                  <div style={{ marginTop: 6 }}>
+                    <input type="file" accept=".glb,.gltf,model/*" onChange={handleModelFile} />
+                    <small className="muted">Or paste a public .glb URL above. Uploaded files become data-URLs.</small>
+                  </div>
                 </div>
-              </div>
-
-              <div className="row">
-                <label>Image URL</label>
-                <input name="image" placeholder="Image URL" value={form.image} onChange={handleChange} />
               </div>
 
               <div className="row">
@@ -267,14 +285,7 @@ export default function AdminArtworks() {
           </div>
         </div>
 
-        
-        <div className="list-controls">
-          <input className="search" placeholder="Search title, artist, description..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="">All categories</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
-        </div>
+      
 
         {loading ? (
           <p className="muted">Loading...</p>
