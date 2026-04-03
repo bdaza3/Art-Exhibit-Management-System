@@ -1,15 +1,10 @@
 import { ClassNames } from "@emotion/react"
 import {Box, Button, Typography, List, Container, Grid, Divider, Paper, Card, CardContent} from "@mui/material"
+import {useEffect, useState} from "react"
 import { useNavigate, Link } from "react-router-dom"
 import "../customer/CustomerDashboard.css"
 import "./AdminDashboard.css"
 import AdminSideBar from "../../components/admin/AdminSideBar"
-import DashboardArtistsCard from "../../components/admin/DashboardArtistsCard"
-import DashboardArtworksCard from "../../components/admin/DashboardArtworksCard"
-import DashboardExhibitionsCard from "../../components/admin/DashboardExhibitionsCard"
-import DashboardOrdersCard from "../../components/admin/DashboardOrdersCard"
-import DashboardCustomersCard from "../../components/admin/DashboardCustomersCard"
-import DashboardReportsCard from "../../components/admin/DashboardReportsCard"
 import BrushIcon from '@mui/icons-material/Brush'
 import EventIcon from '@mui/icons-material/Event'
 import GavelIcon from '@mui/icons-material/Gavel'
@@ -18,11 +13,39 @@ import AnalyticsIcon from '@mui/icons-material/Analytics'
 export default function AdminDashboard() {
   const navigate = useNavigate()
   const username = localStorage.getItem("username")
+  const [metrics, setMetrics] = useState({ artworks: 0, exhibitions: 0, upcomingExhibitions: 0, activeAuctions: 0 })
 
   const logout = () => {
     localStorage.clear()
     navigate("/")
   }
+
+  useEffect(() => {
+    const fetchMetrics = async () => {
+      try {
+        const [artsRes, exRes, aucRes] = await Promise.all([
+          fetch("http://127.0.0.1:8000/api/artworks/"),
+          fetch("http://127.0.0.1:8000/api/exhibitions/stats/"),
+          fetch("http://127.0.0.1:8000/api/auctions/"),
+        ])
+
+        const arts = await artsRes.json()
+        const ex = await exRes.json()
+        const auc = await aucRes.json()
+
+        setMetrics({
+          artworks: Array.isArray(arts) ? arts.length : 0,
+          exhibitions: ex.total || 0,
+          upcomingExhibitions: ex.upcoming || 0,
+          activeAuctions: Array.isArray(auc) ? auc.filter((a: any) => a.status === 'active').length : 0,
+        })
+      } catch (err) {
+        console.error(err)
+      }
+    }
+
+    fetchMetrics()
+  }, [])
 
   return (
     <div className="dashboard-layout">
@@ -132,39 +155,29 @@ export default function AdminDashboard() {
           <Grid container spacing={2}>
               <Card>
                 <CardContent>
-                  <Typography variant="subtitle2">Total Ticket Sales</Typography>
-                  <Typography variant="h6">$12,345</Typography>
+                  <Typography variant="subtitle2">Total Artworks</Typography>
+                  <Typography variant="h6">{metrics.artworks}</Typography>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent>
-                  <Typography variant="subtitle2">Total Art Sales</Typography>
-                  <Typography variant="h6">$48,200</Typography>
+                  <Typography variant="subtitle2">Total Exhibitions</Typography>
+                  <Typography variant="h6">{metrics.exhibitions}</Typography>
+                </CardContent>
+              </Card>
+              <Card>
+                <CardContent>
+                  <Typography variant="subtitle2">Upcoming Exhibitions</Typography>
+                  <Typography variant="h6">{metrics.upcomingExhibitions}</Typography>
                 </CardContent>
               </Card>
               <Card>
                 <CardContent>
                   <Typography variant="subtitle2">Active Auctions</Typography>
-                  <Typography variant="h6">3</Typography>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent>
-                  <Typography variant="subtitle2">Most Viewed Artwork</Typography>
-                  <Typography variant="h6">"Sunset Over Lake"</Typography>
+                  <Typography variant="h6">{metrics.activeAuctions}</Typography>
                 </CardContent>
               </Card>
             </Grid>
-        </div>
-
-        {/* CARDS */}
-        <div className="cards">
-          {/* <DashboardArtistsCard />
-          <DashboardArtworksCard />
-          <DashboardExhibitionsCard />
-          <DashboardOrdersCard />
-          {/* <DashboardCustomersCard /> */}
-          {/* <DashboardReportsCard /> */}
         </div>
       </div>
     </div>

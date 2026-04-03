@@ -1,11 +1,12 @@
 from django.urls import path, include
 from . import views
-from .views import exhibitions_list_create, exhibitions_stats, ArtworkViewSet, import_aic_artworks
+from .views import exhibitions_list_create, exhibitions_stats, ArtworkViewSet, import_aic_artworks, AuctionViewSet, BidViewSet
 from rest_framework.routers import DefaultRouter
-from .views import ArtworkViewSet, import_aic_artworks
 
 router = DefaultRouter()
 router.register(r'artworks', ArtworkViewSet)
+router.register(r'auctions', AuctionViewSet)
+router.register(r'bids', BidViewSet)
 
 urlpatterns = [
     path('register/', views.register_view, name='register'),

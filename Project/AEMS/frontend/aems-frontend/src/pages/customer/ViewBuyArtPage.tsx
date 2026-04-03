@@ -36,6 +36,9 @@ export default function ViewBuyArtPage() {
   const [selected, setSelected] = useState<any | null>(null);
   const [toast, setToast] = useState("");
   const [show3D, setShow3D] = useState(false);
+  const [auctions, setAuctions] = useState<any[]>([])
+  const [bidAmount, setBidAmount] = useState(0)
+  const [bidAnon, setBidAnon] = useState(false)
 
   // ✅ FETCH FROM DJANGO DB
   useEffect(() => {
@@ -72,6 +75,14 @@ export default function ViewBuyArtPage() {
     };
 
     loadArtworks();
+    // fetch auctions
+    (async () => {
+      try {
+        const res = await fetch("http://127.0.0.1:8000/api/auctions/")
+        const data = await res.json()
+        setAuctions(data)
+      } catch { }
+    })()
   }, []);
 
   // ✅ FILTER ARTISTS
@@ -190,6 +201,65 @@ export default function ViewBuyArtPage() {
                   <h2>{selected.title}</h2>
                   <p>{selected.artist}</p>
                   <p>{selected.description}</p>
+
+                  {/* Auction area */}
+                  {(() => {
+                    const auction = auctions.find((a) => a.artwork?.id === selected.id && a.status !== 'ended' && a.status !== 'cancelled')
+                    if (!auction) return null
+
+                    const highest = auction.bids && auction.bids.length ? auction.bids[0].amount : auction.starting_bid
+
+                    return (
+                      <div style={{ marginTop: 12, borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: 12 }}>
+                        <h4>Auction</h4>
+                        <div>Status: {auction.status}</div>
+                        <div>Current Highest: ${highest}</div>
+                        <div>Minimum Increment: ${auction.min_increment}</div>
+
+                        <div style={{ marginTop: 8 }}>
+                          <input type="number" step="0.01" value={bidAmount} onChange={(e) => setBidAmount(Number(e.target.value))} placeholder={`Min: ${Number(highest) + Number(auction.min_increment)}`} />
+                          <label style={{ marginLeft: 8 }}><input type="checkbox" checked={bidAnon} onChange={(e) => setBidAnon(e.target.checked)} /> Anonymous</label>
+                          <button onClick={async () => {
+                            try {
+                              const res = await fetch(`http://127.0.0.1:8000/api/auctions/${auction.id}/place_bid/`, {
+                                method: 'POST',
+                                headers: { 'Content-Type': 'application/json' },
+                                credentials: 'include',
+                                body: JSON.stringify({ amount: bidAmount, anonymous: bidAnon })
+                              })
+
+                              if (!res.ok) {
+                                const err = await res.json()
+                                alert(err.error || 'Bid failed')
+                                return
+                              }
+
+                              const b = await res.json()
+                              setToast('Bid placed')
+                              setTimeout(() => setToast(''), 1500)
+                              // refresh auctions
+                              const ares = await fetch('http://127.0.0.1:8000/api/auctions/')
+                              const adata = await ares.json()
+                              setAuctions(adata)
+                            } catch (err) {
+                              console.error(err)
+                              alert('Bid failed')
+                            }
+                          }}>Place Bid</button>
+                        </div>
+
+                        <div style={{ marginTop: 8 }}>
+                          <h5>Bid History</h5>
+                          <div className="muted">(most recent first)</div>
+                          <ul>
+                            {auction.bids && auction.bids.map((b: any) => (
+                              <li key={b.id}>${b.amount} — {b.user?.username || 'Anonymous'} @ {new Date(b.timestamp).toLocaleString()}</li>
+                            ))}
+                          </ul>
+                        </div>
+                      </div>
+                    )
+                  })()}
 
                   <button onClick={() => onAdd(selected)}>
                     Add to Cart

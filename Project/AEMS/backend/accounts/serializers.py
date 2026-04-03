@@ -2,6 +2,7 @@ from rest_framework import serializers
 from .models import CustomUser
 from .models import Exhibition
 from .models import Artwork
+from .models import Auction, Bid
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -57,3 +58,28 @@ class ArtworkSerializer(serializers.ModelSerializer):
     class Meta:
         model = Artwork
         fields = '__all__'
+
+
+class BidSerializer(serializers.ModelSerializer):
+    user = serializers.SerializerMethodField()
+
+    class Meta:
+        model = Bid
+        fields = ['id', 'auction', 'user', 'amount', 'anonymous', 'timestamp']
+
+    def get_user(self, obj):
+        if obj.anonymous:
+            return {'id': None, 'username': 'Anonymous'}
+        if obj.user:
+            return {'id': obj.user.id, 'username': obj.user.username}
+        return None
+
+
+class AuctionSerializer(serializers.ModelSerializer):
+    artwork = ArtworkSerializer(read_only=True)
+    artwork_id = serializers.PrimaryKeyRelatedField(queryset=Artwork.objects.all(), source='artwork', write_only=True)
+    bids = BidSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Auction
+        fields = ['id', 'artwork', 'artwork_id', 'start_time', 'end_time', 'starting_bid', 'min_increment', 'status', 'created_at', 'bids']

@@ -16,10 +16,60 @@ from .models import Artwork
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, ProfileUpdateSerializer
 from .serializers import ArtworkSerializer
 from rest_framework.viewsets import ModelViewSet
+from rest_framework.decorators import action
+from django.db import transaction
+from .models import Auction, Bid
+from .serializers import AuctionSerializer, BidSerializer
 
 class ArtworkViewSet(ModelViewSet):
     queryset = Artwork.objects.all()
     serializer_class = ArtworkSerializer
+
+
+class AuctionViewSet(ModelViewSet):
+    queryset = Auction.objects.all().order_by("-start_time")
+    serializer_class = AuctionSerializer
+
+    @action(detail=True, methods=['POST'])
+    @transaction.atomic
+    def place_bid(self, request, pk=None):
+        auction = self.get_object()
+        user = request.user if request.user.is_authenticated else None
+        amount = float(request.data.get('amount', 0))
+        anonymous = bool(request.data.get('anonymous', False))
+
+        # basic validation
+        if auction.status != 'active':
+            return Response({'error': 'Auction not active'}, status=status.HTTP_400_BAD_REQUEST)
+
+        highest = auction.bids.first()
+        current = highest.amount if highest else auction.starting_bid
+
+        min_allowed = current + auction.min_increment
+        if amount < min_allowed:
+            return Response({'error': f'Bid must be at least {min_allowed}'}, status=status.HTTP_400_BAD_REQUEST)
+
+        bid = Bid.objects.create(auction=auction, user=user, amount=amount, anonymous=anonymous)
+
+        return Response(BidSerializer(bid).data, status=status.HTTP_201_CREATED)
+
+    @action(detail=True, methods=['POST'])
+    def end(self, request, pk=None):
+        auction = self.get_object()
+        auction.status = 'ended'
+        auction.save()
+        # update artwork status if there is a winner
+        highest = auction.bids.first()
+        if highest:
+            art = auction.artwork
+            art.status = 'sold'
+            art.save()
+        return Response({'status': 'ended'})
+
+
+class BidViewSet(ModelViewSet):
+    queryset = Bid.objects.all()
+    serializer_class = BidSerializer
 
 class CsrfExemptSessionAuth(SessionAuthentication):
     def enforce_csrf(self, request):

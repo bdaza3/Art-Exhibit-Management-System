@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import AdminSideBar from "../../components/admin/AdminSideBar";
 import "./AdminArtworks.css";
 
@@ -20,6 +20,10 @@ export default function AdminArtworks() {
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Artwork | null>(null);
 
+
+  const [query, setQuery] = useState("");
+  const [categoryFilter, setCategoryFilter] = useState("");
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Artwork | null>(null);
@@ -54,6 +58,16 @@ export default function AdminArtworks() {
           ? Number(e.target.value)
           : e.target.value,
     });
+  };
+
+  const handleFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const f = e.target.files && e.target.files[0];
+    if (!f) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      setForm((prev) => ({ ...prev, image: reader.result as string }));
+    };
+    reader.readAsDataURL(f);
   };
 
   const handleSubmit = async (e: any) => {
@@ -149,40 +163,137 @@ export default function AdminArtworks() {
     }
   };
 
+  const handleDelete = async (id?: number) => {
+    if (!id) return;
+    if (!confirm("Delete this artwork? This cannot be undone.")) return;
+
+    const prev = artworks;
+    setArtworks((a) => a.filter((x) => x.id !== id));
+
+    try {
+      await fetch(`${API_BASE}${id}/`, { method: "DELETE" });
+    } catch (err) {
+      console.error("Delete failed", err);
+      setArtworks(prev);
+    }
+    setSelected(null);
+  };
+
+  const categories = Array.from(new Set(artworks.map((a) => a.category).filter(Boolean)));
+
+  const filtered = artworks.filter((a) => {
+    const q = query.trim().toLowerCase();
+    if (categoryFilter && a.category !== categoryFilter) return false;
+    if (!q) return true;
+    return (
+      a.title.toLowerCase().includes(q) ||
+      a.artist.toLowerCase().includes(q) ||
+      (a.description || "").toLowerCase().includes(q)
+    );
+  });
+
   return (
     <div style={{ display: "flex" }}>
       <AdminSideBar />
 
       <div className="admin-page">
         <h1 className="admin-title">Manage Artworks</h1>
+        
+        <div className="art-form">
+          <div className="form-grid">
+            <div className="form-preview">
+              <div className="preview-box">
+                {form.image ? (
+                  <img src={form.image} alt="preview" />
+                ) : (
+                  <div className="preview-empty">Preview</div>
+                )}
+              </div>
+
+              <div className="preview-actions">
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFile} />
+                <small className="muted">Or paste an image URL below</small>
+              </div>
+            </div>
+
+            <div className="form-fields">
+              <div className="row">
+                <label>Title</label>
+                <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
+              </div>
+
+              <div className="row two-col">
+                <div>
+                  <label>Artist</label>
+                  <input name="artist" placeholder="Artist" value={form.artist} onChange={handleChange} />
+                </div>
+
+                <div>
+                  <label>Price (USD)</label>
+                  <input name="price" type="number" placeholder="Price" value={form.price} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div className="row two-col">
+                <div>
+                  <label>Category</label>
+                  <input name="category" placeholder="Category" value={form.category} onChange={handleChange} />
+                </div>
+
+                <div>
+                  <label>3D Model URL</label>
+                  <input name="model_3d" placeholder=".glb URL" value={form.model_3d || ""} onChange={handleChange} />
+                </div>
+              </div>
+
+              <div className="row">
+                <label>Image URL</label>
+                <input name="image" placeholder="Image URL" value={form.image} onChange={handleChange} />
+              </div>
+
+              <div className="row">
+                <label>Description</label>
+                <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
+              </div>
+
+              <div className="row actions">
+                <button onClick={handleSubmit} className="add-btn">Add Artwork</button>
+                <button className="secondary-btn" onClick={() => {
+                  setForm({ title: "", artist: "", price: 0, category: "", image: "", description: "", model_3d: "" });
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }}>Clear</button>
+              </div>
+            </div>
+          </div>
+        </div>
 
         
-        <form className="art-form" onSubmit={handleSubmit}>
-          <input name="title" placeholder="Title" value={form.title} onChange={handleChange} />
-          <input name="artist" placeholder="Artist" value={form.artist} onChange={handleChange} />
-          <input name="price" type="number" placeholder="Price" value={form.price} onChange={handleChange} />
-          <input name="category" placeholder="Category" value={form.category} onChange={handleChange} />
-          <input name="image" placeholder="Image URL" value={form.image} onChange={handleChange} />
-          <input name="model_3d" placeholder="3D Model URL (.glb)" value={form.model_3d || ""} onChange={handleChange} />
-          <textarea name="description" placeholder="Description" value={form.description} onChange={handleChange} />
+        <div className="list-controls">
+          <input className="search" placeholder="Search title, artist, description..." value={query} onChange={(e) => setQuery(e.target.value)} />
+          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
+            <option value="">All categories</option>
+            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
 
-          <button type="submit" className="add-btn">
-              Add Artwork
-          </button>
-        </form>
-
-        
         {loading ? (
           <p className="muted">Loading...</p>
         ) : (
           <div className="art-grid">
-            {artworks.map((art, i) => (
-              <div key={i} className="art-card" onClick={() => setSelected(art)}>
-                {art.image && <img src={art.image} className="art-image" />}
+            {filtered.map((art) => (
+              <div key={art.id || art.title} className="art-card">
+                {art.image && <img src={art.image} className="art-image" alt={art.title} />}
                 <div className="art-body">
                   <div className="art-title">{art.title}</div>
                   <div className="art-artist">{art.artist}</div>
                   <div className="art-price">${art.price}</div>
+                  {art.model_3d && <div className="model-badge">3D</div>}
+
+                  <div className="card-actions">
+                    <button className="link" onClick={() => { setSelected(art); setIsEditing(false); }}>View</button>
+                    <button className="link" onClick={() => { setSelected(art); setIsEditing(true); setEditForm(art); }}>Edit</button>
+                    <button className="link danger" onClick={() => handleDelete(art.id)}>Delete</button>
+                  </div>
                 </div>
               </div>
             ))}
