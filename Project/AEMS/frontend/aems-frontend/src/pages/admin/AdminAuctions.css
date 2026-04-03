@@ -1,0 +1,45 @@
+.auction-form {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.auction-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  min-width: 160px;
+}
+
+.auction-field label {
+  font-size: 13px;
+  color: rgba(255,255,255,0.75);
+}
+
+.admin-input {
+  background: rgba(0,0,0,0.55);
+  color: #fff;
+  border: 1px solid rgba(255,255,255,0.06);
+  padding: 8px 10px;
+  border-radius: 8px;
+  min-width: 160px;
+  box-sizing: border-box;
+}
+
+/* Ensure select dropdown items are readable on dark background */
+.auction-form select.admin-input option {
+  background: #0d0d0d;
+  color: #fff;
+}
+
+.auction-actions { align-self: flex-end; }
+
+/* Prevent right-side cutoff inside dashboard layout */
+.dashboard-content { overflow: visible; }
+
+@media (max-width: 900px) {
+  .auction-field { min-width: 100%; }
+  .auction-actions { width: 100%; display:flex; justify-content:flex-end }
+}

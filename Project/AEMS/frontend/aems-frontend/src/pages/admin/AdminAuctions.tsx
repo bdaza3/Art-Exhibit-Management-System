@@ -1,5 +1,6 @@
 import AdminSideBar from "../../components/admin/AdminSideBar"
 import { useEffect, useState } from "react"
+import "./AdminAuctions.css"
 
 const API_AUCTIONS = "http://127.0.0.1:8000/api/auctions/"
 const API_ARTWORKS = "http://127.0.0.1:8000/api/artworks/"
@@ -75,16 +76,38 @@ export default function AdminAuctions() {
 
         <p>Configure and monitor live auctions. Select an artwork to start an auction, set starting bid, increment, and schedule.</p>
 
-        <form onSubmit={handleCreate} style={{ display: 'flex', gap: 8, marginBottom: 12, alignItems: 'center' }}>
-          <select required value={form.artwork_id} onChange={(e) => setForm({ ...form, artwork_id: e.target.value })}>
-            <option value="">Select artwork</option>
-            {artworks.map((a: any) => <option key={a.id} value={a.id}>{a.title} — {a.artist}</option>)}
-          </select>
-          <input type="number" step="0.01" placeholder="Starting bid" value={form.starting_bid} onChange={(e) => setForm({ ...form, starting_bid: Number(e.target.value) })} />
-          <input type="number" step="0.01" placeholder="Min increment" value={form.min_increment} onChange={(e) => setForm({ ...form, min_increment: Number(e.target.value) })} />
-          <input type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
-          <input type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
-          <button type="submit">Create Auction</button>
+        <form onSubmit={handleCreate} className="auction-form">
+          <div className="auction-field">
+            <label>Artwork</label>
+            <select required className="admin-input" value={form.artwork_id} onChange={(e) => setForm({ ...form, artwork_id: e.target.value })}>
+              <option value="">Select artwork</option>
+              {artworks.map((a: any) => <option key={a.id} value={a.id}>{a.title} — {a.artist}</option>)}
+            </select>
+          </div>
+
+          <div className="auction-field">
+            <label>Starting bid (USD)</label>
+            <input className="admin-input" type="number" step="0.01" placeholder="Starting bid" value={form.starting_bid} onChange={(e) => setForm({ ...form, starting_bid: Number(e.target.value) })} />
+          </div>
+
+          <div className="auction-field">
+            <label>Min increment (USD)</label>
+            <input className="admin-input" type="number" step="0.01" placeholder="Min increment" value={form.min_increment} onChange={(e) => setForm({ ...form, min_increment: Number(e.target.value) })} />
+          </div>
+
+          <div className="auction-field">
+            <label>Start time</label>
+            <input className="admin-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
+          </div>
+
+          <div className="auction-field">
+            <label>End time</label>
+            <input className="admin-input" type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
+          </div>
+
+          <div className="auction-field auction-actions">
+            <button type="submit" className="dash-action-btn">Create Auction</button>
+          </div>
         </form>
 
         <h3>Active / Scheduled Auctions</h3>
