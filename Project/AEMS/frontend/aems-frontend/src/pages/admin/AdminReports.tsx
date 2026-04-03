@@ -45,9 +45,27 @@ export default function AdminReports() {
           fetch("/api/tickets/"),
         ]);
 
-        const orders = ordersRes.ok ? await ordersRes.json() : [];
-        const auctions = aucRes.ok ? await aucRes.json() : [];
-        const tickets = ticketsRes.ok ? await ticketsRes.json() : [];
+        async function parseSafe(res: Response) {
+          try {
+            if (!res.ok) return [];
+            const ct = (res.headers.get("content-type") || "").toLowerCase();
+            if (ct.includes("application/json")) {
+              const data = await res.json();
+              return Array.isArray(data) ? data : [];
+            }
+            if (res.status === 204) return [];
+            return [];
+          } catch (e) {
+            console.warn("Failed to parse JSON response", e);
+            return [];
+          }
+        }
+
+        const [orders, auctions, tickets] = await Promise.all([
+          parseSafe(ordersRes),
+          parseSafe(aucRes),
+          parseSafe(ticketsRes),
+        ]);
 
         const revenue = Array.isArray(orders) ? orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0) : 0;
         const ordersCount = Array.isArray(orders) ? orders.length : 0;
