@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import AdminSideBar from "../../components/admin/AdminSideBar";
+import ArtViewer3D from "../../components/customer/3DArtworkViewer";
 import "./AdminArtworks.css";
 
 const API_BASE = "http://127.0.0.1:8000/api/artworks/";
@@ -29,6 +30,7 @@ export default function AdminArtworks() {
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Artwork | null>(null);
+  const [show3D, setShow3D] = useState(false);
 
   const [form, setForm] = useState<Artwork>({
     title: "",
@@ -371,8 +373,8 @@ export default function AdminArtworks() {
                   {art.model_3d && <div className="model-badge">3D</div>}
 
                   <div className="card-actions">
-                    <button className="link" onClick={() => { setSelected(art); setIsEditing(false); }}>View</button>
-                    <button className="link" onClick={() => { setSelected(art); setIsEditing(true); setEditForm(art); }}>Edit</button>
+                    <button className="link" onClick={() => { setSelected(art); setIsEditing(false); setShow3D(false); }}>View</button>
+                    <button className="link" onClick={() => { setSelected(art); setIsEditing(true); setEditForm(art); setShow3D(false); }}>Edit</button>
                     <button className="link danger" onClick={() => handleDelete(art.id)}>Delete</button>
                   </div>
                 </div>
@@ -389,7 +391,7 @@ export default function AdminArtworks() {
           }}>
             <div className="modal" onClick={(e) => e.stopPropagation()}>
 
-              <div className="modal-header">
+                  <div className="modal-header">
                 <div>
                   <h2>{selected.title}</h2>
                   <p className="muted">{selected.artist}</p>
@@ -398,6 +400,7 @@ export default function AdminArtworks() {
                 <button className="close-btn" onClick={() => {
                   setSelected(null);
                   setIsEditing(false);
+                  setShow3D(false);
                 }}>
                   ✕
                 </button>
@@ -405,7 +408,19 @@ export default function AdminArtworks() {
 
               <div className="modal-content">
                 <div className="modal-left">
-                  {selected.image && <img src={selected.image} className="modal-image" />}
+                  {show3D && selected.model_3d ? (
+                    <ArtViewer3D modelUrl={selected.model_3d} height={400} />
+                  ) : (
+                    selected.image && <img src={selected.image} className="modal-image" />
+                  )}
+
+                  {selected.model_3d && (
+                    <div style={{ marginTop: 12 }}>
+                      <button onClick={() => setShow3D((s) => !s)} style={{ marginBottom: 8 }}>
+                        {show3D ? 'Hide 3D' : 'View 3D'}
+                      </button>
+                    </div>
+                  )}
                 </div>
 
                 

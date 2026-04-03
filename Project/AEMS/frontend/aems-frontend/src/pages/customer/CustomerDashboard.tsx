@@ -64,6 +64,7 @@ function mapDbArtworkToStoreArtwork(item: any): Artwork {
     description: item.description || "",
     museumsExhibited: ["AEMS Collection"],
     image: item.image || item.image_url || "",
+    modelUrl: item.model_3d || item.modelUrl || undefined,
   }
 }
 
@@ -132,6 +133,7 @@ export default function CustomerDashboard() {
   const [selected, setSelected] = useState<Artwork | null>(null)
   const [toast, setToast] = useState("")
   const [artworks, setArtworks] = useState<Artwork[]>([])
+  const [show3D, setShow3D] = useState(false)
   const [isLoadingArt, setIsLoadingArt] = useState(true)
   const [artError, setArtError] = useState("")
   const [page, setPage] = useState(1)
@@ -334,7 +336,7 @@ export default function CustomerDashboard() {
           <div className="art-hero">
             <div>
               <h2>View / Buy Art</h2>            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              <button className="btn btn-ghost" onClick={() => setShow3DTest(true)}>Open 3D Test</button>
+              {/*<button className="btn btn-ghost" onClick={() => setShow3DTest(true)}>Open 3D Test</button>*/}
             </div>
               <p className="muted">Explore curated works by artists. Click any piece for full details.</p>
             </div>
@@ -375,17 +377,18 @@ export default function CustomerDashboard() {
 
           <div className="art-grid">
             {filtered.map((art) => (
-              <button key={art.id} className="art-card" onClick={() => setSelected(art)} type="button">
-                <div className="art-image" style={{ backgroundImage: `url(${art.image})` }} />
-                <div className="art-card-body">
-                  <div className="art-title-row">
-                    <div className="art-title">{art.title}</div>
-                    <div className="art-price">{formatMoney(art.price)}</div>
+              <button key={art.id} className="art-card" onClick={() => { setSelected(art); setShow3D(false); }} type="button">
+                  <div className="art-image" style={{ backgroundImage: `url(${art.image})` }} />
+                  <div className="art-card-body">
+                    <div className="art-title-row">
+                      <div className="art-title">{art.title}</div>
+                      <div className="art-price">{formatMoney(art.price)}</div>
+                    </div>
+                    {art.modelUrl && <div className="model-badge">3D</div>}
+                    <div className="art-artist muted">{art.artist}</div>
+                    <div className="art-meta muted">{art.medium}</div>
                   </div>
-                  <div className="art-artist muted">{art.artist}</div>
-                  <div className="art-meta muted">{art.medium}</div>
-                </div>
-              </button>
+                </button>
             ))}
           </div>
 
@@ -426,7 +429,13 @@ export default function CustomerDashboard() {
                 <button className="icon-btn" onClick={() => setSelected(null)} aria-label="Close">✕</button>
               </div>
               <div className="modal-content">
-                <div className="modal-image" style={{ backgroundImage: `url(${selected.image})` }} />
+                {show3D && selected.modelUrl ? (
+                  <div className="viewer-wrap">
+                    <ArtViewer3D modelUrl={selected.modelUrl as string} />
+                  </div>
+                ) : (
+                  <div className="modal-image" style={{ backgroundImage: `url(${selected.image})` }} />
+                )}
                 <div className="modal-details">
                   <div className="detail-row"><span className="label">Price</span><span className="value gold">{formatMoney(selected.price)}</span></div>
                   <div className="detail-row"><span className="label">Created</span><span className="value">{selected.dateCreated}</span></div>
@@ -441,8 +450,11 @@ export default function CustomerDashboard() {
                     </ul>
                   </div>
                   <div className="modal-actions">
+                    {selected.modelUrl && (
+                      <button className="btn btn-ghost" onClick={() => setShow3D((s) => !s)}>{show3D ? 'Hide 3D' : 'View 3D'}</button>
+                    )}
                     <button className="btn btn-primary" onClick={() => onAdd(selected)}>Add to cart</button>
-                    <button className="btn btn-ghost" onClick={() => setSelected(null)}>Close</button>
+                    <button className="btn btn-ghost" onClick={() => { setSelected(null); setShow3D(false); }}>Close</button>
                   </div>
                 </div>
               </div>

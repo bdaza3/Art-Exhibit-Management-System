@@ -21,9 +21,11 @@ type ArtViewer3DProps = {
 const ArtViewer3D: FC<ArtViewer3DProps> = ({ modelUrl, height }) => {
   if (!modelUrl) return null;
 
+  const styleHeight = height === undefined ? "100%" : `${height}px`;
+
   return (
-    <div style={{ width: "100%", height: height ? `${height}px` : "500px" }}>
-      <Canvas camera={{ position: [0, 0, 5] }}>
+    <div style={{ width: "100%", height: styleHeight }}>
+      <Canvas style={{ width: "100%", height: "100%" }} camera={{ position: [0, 0, 5] }}>
         <ambientLight intensity={0.6} />
         <directionalLight position={[5, 5, 5]} />
 

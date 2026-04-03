@@ -163,7 +163,7 @@ export default function ViewBuyArtPage() {
             <div
               key={art.id}
               className="art-card"
-              onClick={() => setSelected(art)}
+              onClick={() => { setSelected(art); setShow3D(false); }}
             >
               <div
                 className="art-image"
@@ -172,6 +172,7 @@ export default function ViewBuyArtPage() {
               <h3>{art.title}</h3>
               <p>{art.artist}</p>
               <p className="gold">${art.price}</p>
+              {art.modelUrl && <div className="model-badge">3D</div>}
             </div>
           ))}
         </div>
@@ -182,19 +183,21 @@ export default function ViewBuyArtPage() {
             <div className="modal" onClick={(e) => e.stopPropagation()}>
               <div className="modal-content">
                 <div className="modal-left">
-                  <div
-                    className="modal-image"
-                    style={{ backgroundImage: `url(${selected.image})` }}
-                  />
-
-                  {selected.modelUrl && (
-                    <button onClick={() => setShow3D(!show3D)}>
-                      {show3D ? "Hide 3D" : "View 3D"}
-                    </button>
+                  {show3D && selected.modelUrl ? (
+                    <div className="viewer-wrap">
+                      <ArtViewer3D modelUrl={selected.modelUrl} />
+                    </div>
+                  ) : (
+                    <div
+                      className="modal-image"
+                      style={{ backgroundImage: `url(${selected.image})` }}
+                    />
                   )}
 
-                  {show3D && selected.modelUrl && (
-                    <ArtViewer3D modelUrl={selected.modelUrl} height={400} />
+                  {selected.modelUrl && (
+                    <button onClick={() => setShow3D(!show3D)} className="viewer-toggle">
+                      {show3D ? "Hide 3D" : "View 3D"}
+                    </button>
                   )}
                 </div>
 
