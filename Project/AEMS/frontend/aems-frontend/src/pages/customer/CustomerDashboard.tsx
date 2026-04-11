@@ -149,7 +149,7 @@ export default function CustomerDashboard() {
 
       try {
         const params = new URLSearchParams({ page: String(page), limit: String(limit) })
-        const response = await fetch(`${API_BASE}/`)
+        const response = await fetch(`${API_BASE}/?${params.toString()}`)
 
         if (!response.ok) {
           throw new Error(`Request failed with status ${response.status}`)
@@ -157,13 +157,71 @@ export default function CustomerDashboard() {
 
         const payload = await response.json()
 
-        const mapped = (payload || []).map(mapDbArtworkToStoreArtwork)
+        // map DB artworks (payload may be array or object with data)
+        let dbItems: any[] = []
+        let dbTotal = 0
+        if (Array.isArray(payload)) {
+          dbItems = payload
+          dbTotal = payload.length
+        } else if (payload && Array.isArray(payload.results)) {
+          dbItems = payload.results
+          dbTotal = payload.count || payload.total || dbItems.length
+        } else if (payload && Array.isArray(payload.data)) {
+          dbItems = payload.data
+          dbTotal = payload.total || dbItems.length
+        } else if (payload) {
+          // fallback: try to treat payload as array-like
+          dbItems = Array.isArray(payload) ? payload : []
+          dbTotal = dbItems.length
+        }
 
-      // since no pagination yet
+        const dbMapped = dbItems.map(mapDbArtworkToStoreArtwork)
+
+        // fetch AIC with same page/limit
+        let aicMapped: Artwork[] = []
+        let aicTotal = 0
+        let aicTotalPages = 0
+        try {
+          const aicRes = await fetch(`https://api.artic.edu/api/v1/artworks?page=${page}&limit=${limit}&fields=id,title,artist_title,date_display,image_id`)
+          if (aicRes.ok) {
+            const aicPayload = await aicRes.json() as AicArtworksResponse & { pagination?: any }
+            const aicData = (aicPayload && (aicPayload as any).data) || []
+            aicMapped = aicData.map((it: any) => ({
+              id: `aic-${it.id}`,
+              title: it.title || 'Untitled',
+              artist: it.artist_title || 'Unknown Artist',
+              price: 500 + (Number(it.id) % 95) * 25,
+              dateCreated: it.date_display || 'Unknown',
+              medium: 'Museum Collection',
+              dimensions: 'Not specified',
+              purpose: 'On loan from museum collection',
+              description: it.thumbnail?.alt_text || '',
+              museumsExhibited: ['Art Institute of Chicago'],
+              image: it.image_id ? `https://www.artic.edu/iiif/2/${it.image_id}/full/843,/0/default.jpg` : '',
+            }))
+            aicTotal = aicPayload.pagination?.total || aicPayload.pagination?.total || aicMapped.length
+            aicTotalPages = aicPayload.pagination?.total_pages || 0
+          }
+        } catch (e) {
+          console.warn('Failed to load AIC artworks', e)
+        }
+
+        // merge DB + AIC results
+        const merged = [...dbMapped, ...aicMapped]
+
+        // determine total pages: prefer DB pagination if available, else AIC, else estimate
+        let computedTotalPages = 1
+        const dbPagesFromPayload = (payload && (payload.total || payload.count)) ? Math.ceil((payload.total || payload.count) / limit) : 0
+        if (dbPagesFromPayload) computedTotalPages = dbPagesFromPayload
+        else if (aicTotalPages) computedTotalPages = aicTotalPages
+        else {
+          const combinedTotal = (payload && (payload.total || payload.count)) ? (payload.total || payload.count) : (dbTotal + aicTotal)
+          computedTotalPages = Math.max(1, Math.ceil((combinedTotal || merged.length) / limit))
+        }
 
         if (!isCancelled) {
-          setArtworks(mapped)
-          setTotalPages(1) 
+          setArtworks(merged)
+          setTotalPages(computedTotalPages)
         }
       } catch {
         if (!isCancelled) {
