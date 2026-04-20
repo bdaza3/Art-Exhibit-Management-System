@@ -52,10 +52,12 @@
   font-weight: 600;
   color: #000;
   text-transform: none;
+  transition: 0.2s ease;
 }
 
 .dash-action-btn:hover {
   opacity: 0.95;
+  transform: scale(1.05);
 }
 
 .dashboard-content .management-actions {

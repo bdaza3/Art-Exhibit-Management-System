@@ -53,6 +53,10 @@
   border:none;
   font-weight:700;
   cursor:pointer;
+  transition: 0.2s ease;
 }
 
-.logout-btn:hover{ background:#e6c24a }
+.logout-btn:hover{ 
+  background:#e6c24a;
+  transform: scale(1.05);
+}

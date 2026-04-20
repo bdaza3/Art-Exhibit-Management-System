@@ -3,6 +3,7 @@ import {useEffect, useState, useMemo} from "react"
 import { useNavigate, Link } from "react-router-dom"
 import "./AdminDashboard.css"
 import AdminSideBar from "../../components/admin/AdminSideBar"
+import { shadow } from "three/src/nodes/lighting/ShadowNode.js"
 
 const formatRelativeTime = (value: string | number | Date) => {
   const date = new Date(value)
@@ -112,9 +113,9 @@ export default function AdminDashboard() {
           </div>
 
           <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Button variant="contained" onClick={() => navigate('/admin/events')} sx={{ bgcolor: '#d4af37', color: '#000', textTransform: 'none' }}>New Exhibition</Button>
-            <Button variant="outlined" onClick={() => navigate('/admin/arts')} sx={{ color: '#000000', borderColor: '#d4af37', textTransform: 'none' }}>Add Artwork</Button>
-            <Button onClick={logout} sx={{ color: '#fff', background: 'transparent', border: '1px solid rgba(255,255,255,0.06)' }}>Logout</Button>
+            <Button variant="contained" onClick={() => navigate('/admin/events')} sx={{ bgcolor: '#d4af37', color: '#000', transition: 'transform 0.2s', textTransform: 'none', ":hover": { transform: 'scale(1.05)'} }}>New Exhibition</Button>
+            <Button variant="outlined" onClick={() => navigate('/admin/arts')} sx={{ color: '#000000', borderColor: '#d4af37',textTransform: 'none', transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Add Artwork</Button>
+            <Button onClick={logout} sx={{ color: '#fff', background: 'transparent', transition: 'transform 0.2s',border: '1px solid rgba(255,255,255,0.06)', ":hover": { transform: 'scale(1.05)'}}}>Logout</Button>
           </div>
         </div>
 

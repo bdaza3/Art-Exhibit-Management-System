@@ -74,7 +74,7 @@ export default function AdminAuctions() {
       <div className="dashboard-content">
         <h2>Auctions</h2>
 
-        <p>Configure and monitor live auctions. Select an artwork to start an auction, set starting bid, increment, and schedule.</p>
+        <p>Select an artwork to start an auction, set starting bid, increment, and schedule.</p>
 
         <form onSubmit={handleCreate} className="auction-form">
           <div className="auction-field">

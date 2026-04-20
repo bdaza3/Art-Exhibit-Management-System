@@ -46,7 +46,7 @@ export const Login = () => {
   return (
     <div className="login-bg">
       <div className="login-card">
-        <h2 className="login-title">AEMS Login</h2>
+        <h2 className="login-title">Login</h2>
 
         {error && <p style={{ color: "#ff6b6b", marginBottom: 10 }}>{error}</p>}
 

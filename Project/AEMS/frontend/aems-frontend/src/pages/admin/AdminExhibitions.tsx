@@ -262,12 +262,12 @@ export default function AdminExhibitions() {
         <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
             <h2 style={{ margin: 0 }}>Exhibitions</h2>
-            <div className="muted">Manage exhibitions — create, edit, and organize events.</div>
+            <div className="muted">Create, edit, and organize your events.</div>
           </div>
 
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <Button variant="outlined" onClick={() => refresh()} sx={{ textTransform: "none", color: "#000" }}>Refresh</Button>
-            <Button variant="contained" onClick={openCreate} sx={{ bgcolor: "#d4af37", color: "#000", textTransform: "none" }}>New Exhibition</Button>
+            <Button variant="outlined" onClick={() => refresh()} sx={{ textTransform: "none", color: "#000", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Refresh</Button>
+            <Button variant="contained" onClick={openCreate} sx={{ bgcolor: "#d4af37", color: "#000", textTransform: "none", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>New Exhibition</Button>
           </div>
         </div>
 
@@ -302,8 +302,8 @@ export default function AdminExhibitions() {
                     </div>
 
                     <div style={{ display: 'flex', gap: 8, marginTop: 6 }}>
-                      <Button size="small" onClick={() => openForEdit(ex)} sx={{ textTransform: "none" }}>Edit</Button>
-                      <Button size="small" onClick={() => handleDelete(ex.id)} sx={{ color: "#ff6b6b", textTransform: "none" }}>Delete</Button>
+                      <Button size="small" onClick={() => openForEdit(ex)} sx={{ textTransform: "none", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Edit</Button>
+                      <Button size="small" onClick={() => handleDelete(ex.id)} sx={{ color: "#ff6b6b", textTransform: "none", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Delete</Button>
                     </div>
                   </div>
                 </CardContent>
@@ -314,9 +314,9 @@ export default function AdminExhibitions() {
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 18 }}>
             <div className="muted">Showing {filtered.length} results</div>
             <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-              <Button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} sx={{ textTransform: "none" }}>Prev</Button>
+              <Button disabled={page === 0} onClick={() => setPage((p) => Math.max(0, p - 1))} sx={{ textTransform: "none", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Prev</Button>
               <div className="muted">Page {page + 1} of {Math.max(1, Math.ceil(filtered.length / pageSize))}</div>
-              <Button disabled={(page + 1) * pageSize >= filtered.length} onClick={() => setPage((p) => p + 1)} sx={{ textTransform: "none" }}>Next</Button>
+              <Button disabled={(page + 1) * pageSize >= filtered.length} onClick={() => setPage((p) => p + 1)} sx={{ textTransform: "none", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Next</Button>
             </div>
           </div>
         </div>
