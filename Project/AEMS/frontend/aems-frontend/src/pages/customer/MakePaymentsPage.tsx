@@ -12,6 +12,7 @@ type CartItem = {
 };
 
 const CART_KEY = "aems_cart";
+const ORDERS_API = "http://127.0.0.1:8000/api/orders/";
 
 function loadCart(): CartItem[] {
   try {
@@ -36,6 +37,7 @@ export default function MakePaymentsPage() {
   const [expiry, setExpiry] = useState("");
   const [cvv, setCvv] = useState("");
   const [zip, setZip] = useState("");
+  const [paymentError, setPaymentError] = useState("");
 
   const items = useMemo(() => loadCart(), []);
   const subtotal = useMemo(
@@ -47,48 +49,66 @@ export default function MakePaymentsPage() {
 
   const isEmpty = items.length === 0;
 
+  function validateCardDetails() {
+    if (method !== "card") return "";
+
+    const cleanCardNumber = cardNumber.replace(/\s+/g, "");
+    const cleanCvv = cvv.trim();
+    const cleanZip = zip.trim();
+
+    if (!cardName.trim()) return "Please enter the cardholder name.";
+    if (!/^\d{13,19}$/.test(cleanCardNumber)) return "Please enter a valid card number.";
+    if (!/^(0[1-9]|1[0-2])\/\d{2}$/.test(expiry.trim())) return "Please enter expiry as MM/YY.";
+    if (!/^\d{3,4}$/.test(cleanCvv)) return "Please enter a valid CVV.";
+    if (!/^\d{5}(-\d{4})?$/.test(cleanZip)) return "Please enter a valid ZIP code.";
+
+    return "";
+  }
+
   async function payNow() {
     if (isEmpty) return;
+
+    const validationMessage = validateCardDetails();
+    if (validationMessage) {
+      setPaymentError(validationMessage);
+      return;
+    }
+
+    setPaymentError("");
     setProcessing(true);
 
-    // Build a minimal payload to send to the backend if available
+    const savedUser = JSON.parse(localStorage.getItem("user") || "{}");
     const payload = {
       method,
-      card: { cardName, cardNumber, expiry, cvv, zip },
       items,
       total,
+      customer_username: savedUser.username || localStorage.getItem("username") || "guest_customer",
+      customer: {
+        username: savedUser.username || localStorage.getItem("username") || "guest_customer",
+        email: savedUser.email || "",
+      },
     };
 
     try {
-      // Try to call a backend payments endpoint if present
-      const res = await fetch("/api/payments/", {
+      const res = await fetch(ORDERS_API, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
         credentials: "include",
       });
 
-      if (res.ok) {
-        // backend handled payment
-        localStorage.setItem(CART_KEY, JSON.stringify([]));
-        window.dispatchEvent(new Event("cart_updated"));
-        navigate("/customer");
-      } else {
-        // fallback UI flow: if backend missing or errored, simulate success
+      if (!res.ok) {
         const text = await res.text().catch(() => "");
-        console.warn("Payments endpoint error:", res.status, text);
-        alert("Payment processed (simulated). Backend returned an error.");
-        localStorage.setItem(CART_KEY, JSON.stringify([]));
-        window.dispatchEvent(new Event("cart_updated"));
-        navigate("/customer");
+        throw new Error(`Order save failed: ${res.status} ${text}`);
       }
-    } catch (err) {
-      // network or endpoint not present — simulate a friendly payment success
-      console.warn("Payment call failed, simulating success:", err);
-      alert("Payment successful (simulated). Connect backend for real payments.");
+
+      alert("Payment successful. Your order was sent to admin.");
       localStorage.setItem(CART_KEY, JSON.stringify([]));
       window.dispatchEvent(new Event("cart_updated"));
       navigate("/customer");
+    } catch (err) {
+      console.error("Order creation failed:", err);
+      alert("Payment could not be completed because the order was not saved. Please make sure the backend is running.");
     } finally {
       setProcessing(false);
     }
@@ -159,29 +179,74 @@ export default function MakePaymentsPage() {
                 <div className="grid2">
                   <label>
                     Cardholder name
-                    <input placeholder="Username" value={cardName} onChange={(e) => setCardName(e.target.value)} />
+                    <input
+                      placeholder="Username"
+                      value={cardName}
+                      onChange={(e) => {
+                        setCardName(e.target.value);
+                        setPaymentError("");
+                      }}
+                      required
+                    />
                   </label>
 
                   <label>
                     Card number
-                    <input placeholder="1234 5678 9012 3456" value={cardNumber} onChange={(e) => setCardNumber(e.target.value)} />
+                    <input
+                      inputMode="numeric"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardNumber}
+                      onChange={(e) => {
+                        setCardNumber(e.target.value);
+                        setPaymentError("");
+                      }}
+                      required
+                    />
                   </label>
                 </div>
 
                 <div className="grid3">
                   <label>
                     Expiry
-                    <input placeholder="MM/YY" value={expiry} onChange={(e) => setExpiry(e.target.value)} />
+                    <input
+                      placeholder="MM/YY"
+                      value={expiry}
+                      onChange={(e) => {
+                        setExpiry(e.target.value);
+                        setPaymentError("");
+                      }}
+                      required
+                    />
                   </label>
                   <label>
                     CVV
-                    <input placeholder="123" value={cvv} onChange={(e) => setCvv(e.target.value)} />
+                    <input
+                      inputMode="numeric"
+                      placeholder="123"
+                      value={cvv}
+                      onChange={(e) => {
+                        setCvv(e.target.value);
+                        setPaymentError("");
+                      }}
+                      required
+                    />
                   </label>
                   <label>
                     ZIP
-                    <input placeholder="60607" value={zip} onChange={(e) => setZip(e.target.value)} />
+                    <input
+                      inputMode="numeric"
+                      placeholder="60607"
+                      value={zip}
+                      onChange={(e) => {
+                        setZip(e.target.value);
+                        setPaymentError("");
+                      }}
+                      required
+                    />
                   </label>
                 </div>
+
+                {paymentError && <p className="payment-error">{paymentError}</p>}
 
                 <p className="muted tiny">
                   This is a UI placeholder. Later connect to Stripe.
@@ -194,6 +259,8 @@ export default function MakePaymentsPage() {
                 You’ll be redirected to {method.toUpperCase()} (placeholder).
               </div>
             )}
+
+            {method !== "card" && paymentError && <p className="payment-error">{paymentError}</p>}
           </div>
 
           <aside className="pay-summary">

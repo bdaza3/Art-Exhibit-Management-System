@@ -9,6 +9,9 @@ type Order = {
   status: string
   items?: Array<{ title: string; qty: number; price: number }>
   created_at?: string
+  artwork_title?: string
+  quantity?: number
+  total_price?: number
 }
 
 const API_BASE = "http://127.0.0.1:8000/api/orders/"
@@ -24,7 +27,7 @@ export default function AdminOrders() {
     fetch(API_BASE)
       .then((r) => r.json())
       .then((data) => {
-        setOrders(data)
+        setOrders(Array.isArray(data) ? data : [])
         setLoading(false)
       })
       .catch(() => setLoading(false))
@@ -58,10 +61,10 @@ export default function AdminOrders() {
   const updateStatus = async (id?: number, status?: string) => {
     if (!id || !status) return
     const prev = orders
-    setOrders((s) => s.map((o) => (o.id === id ? { ...o, status: status } : o)))
+    setOrders((s) => s.map((o) => (o.id === id ? { ...o, status } : o)))
     try {
       await fetch(`${API_BASE}${id}/`, {
-        method: "PUT",
+        method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ status }),
       })
@@ -70,6 +73,14 @@ export default function AdminOrders() {
       setOrders(prev)
     }
   }
+
+  const orderItems = (order: Order) =>
+    order.items?.length
+      ? order.items
+      : [{ title: order.artwork_title || "Purchased item", qty: order.quantity || 1, price: Number(order.total_price || order.total || 0) }]
+
+  const money = (value?: number) => Number(value || 0).toFixed(2)
+  const displayDate = (value?: string) => value ? new Date(value).toLocaleString() : "New order"
 
   return (
     <div style={{ display: "flex" }}>
@@ -90,6 +101,7 @@ export default function AdminOrders() {
           <p className="muted">Loading...</p>
         ) : (
           <div className="art-grid">
+            {filtered.length === 0 && <p className="muted">No orders found yet. Customer purchases will appear here after checkout.</p>}
             {filtered.map((o) => (
               <div key={o.id} className="art-card">
                 <div style={{ padding: 12 }}>
@@ -97,16 +109,21 @@ export default function AdminOrders() {
                     <div>
                       <div className="art-title">Order #{o.id}</div>
                       <div className="art-artist">{o.customer}</div>
+                      <div className="muted tiny">{displayDate(o.created_at)}</div>
                     </div>
                     <div style={{ textAlign: "right" }}>
-                      <div className="art-price">${o.total.toFixed(2)}</div>
+                      <div className="art-price">${money(o.total)}</div>
                       <div className="model-badge">{o.status}</div>
                     </div>
                   </div>
 
+                  <div className="muted" style={{ marginTop: 10 }}>
+                    {orderItems(o).map((it) => `${it.title} x${it.qty}`).join(", ")}
+                  </div>
+
                   <div className="card-actions">
                     <button className="link" onClick={() => setSelected(o)}>View</button>
-                    <button className="link" onClick={() => updateStatus(o.id, o.status === "shipped" ? "processing" : "shipped")}>Toggle Shipped</button>
+                    <button className="link" onClick={() => updateStatus(o.id, o.status === "Shipped" ? "Paid" : "Shipped")}>Toggle Shipped</button>
                     <button className="link danger" onClick={() => handleDelete(o.id)}>Delete</button>
                   </div>
                 </div>
@@ -121,7 +138,7 @@ export default function AdminOrders() {
               <div className="modal-header">
                 <div>
                   <h2>Order #{selected.id}</h2>
-                  <p className="muted">{selected.customer} • {selected.created_at}</p>
+                  <p className="muted">{selected.customer} • {displayDate(selected.created_at)}</p>
                 </div>
                 <button className="close-btn" onClick={() => setSelected(null)}>✕</button>
               </div>
@@ -131,18 +148,18 @@ export default function AdminOrders() {
                   <div style={{ padding: 10 }}>
                     <strong>Items</strong>
                     <ul>
-                      {selected.items?.map((it, i) => (
-                        <li key={i}>{it.title} × {it.qty} — ${it.price.toFixed(2)}</li>
+                      {orderItems(selected).map((it, i) => (
+                        <li key={i}>{it.title} x {it.qty} - ${money(it.price)}</li>
                       ))}
                     </ul>
                   </div>
                 </div>
 
                 <div className="modal-right">
-                  <div className="detail-row"><span>Total</span><span className="gold">${selected.total.toFixed(2)}</span></div>
+                  <div className="detail-row"><span>Total</span><span className="gold">${money(selected.total)}</span></div>
                   <div className="detail-row"><span>Status</span><span>{selected.status}</span></div>
                   <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-                    <button className="primary-btn" onClick={() => { updateStatus(selected.id, "shipped"); setSelected(null); }}>Mark Shipped</button>
+                    <button className="primary-btn" onClick={() => { updateStatus(selected.id, "Shipped"); setSelected(null); }}>Mark Shipped</button>
                     <button className="secondary-btn" onClick={() => setSelected(null)}>Close</button>
                   </div>
                 </div>
