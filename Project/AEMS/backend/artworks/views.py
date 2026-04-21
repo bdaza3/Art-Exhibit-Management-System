@@ -1,4 +1,5 @@
 import requests
+from datetime import date
 from django.contrib.auth import get_user_model
 from django.db import transaction
 from django.views.decorators.csrf import csrf_exempt
@@ -7,8 +8,9 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 
-from .services.artic_api import fetch_artwork_detail, fetch_artworks
-from .models import Artwork, Order
+from .services.artic_api import fetch_artwork_detail, fetch_artworks, fetch_exhibition_events
+from .services.serpapi_events import fetch_serpapi_art_events, DEFAULT_EVENTS_QUERY
+from .models import Artwork, Order, ArchivedEvent
 from .serializers import OrderSerializer
 
 
@@ -140,3 +142,140 @@ def artic_artwork_detail(request, artwork_id):
 		return Response(data)
 	except requests.RequestException:
 		return Response({"detail": "Failed to fetch Art Institute artwork detail."}, status=502)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_artic_events(request):
+	try:
+		page = int(request.GET.get("page", 1))
+		limit = int(request.GET.get("limit", 12))
+	except ValueError:
+		return Response({"detail": "page and limit must be integers."}, status=400)
+
+	q = request.GET.get("q", "").strip() or None
+
+	try:
+		data = fetch_exhibition_events(page=page, limit=limit, q=q)
+		return Response(data)
+	except requests.RequestException:
+		return Response({"detail": "Failed to fetch Art Institute exhibition events."}, status=502)
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_serpapi_art_events(request):
+	q = request.GET.get("q", "").strip() or DEFAULT_EVENTS_QUERY
+	try:
+		page = int(request.GET.get("page", 1))
+		num = int(request.GET.get("num", 10))
+		pages = int(request.GET.get("pages", 1))
+	except ValueError:
+		return Response({"detail": "page, num, and pages must be integers."}, status=400)
+
+	try:
+		data = fetch_serpapi_art_events(query=q, page=page, num=num, pages=pages)
+		return Response(data)
+	except ValueError as exc:
+		return Response({"detail": str(exc)}, status=500)
+	except requests.RequestException:
+		return Response({"detail": "Failed to fetch events from SerpApi."}, status=502)
+
+
+def _parse_iso_date(value):
+	if not value:
+		return None
+	text = str(value)[:10]
+	try:
+		return date.fromisoformat(text)
+	except ValueError:
+		return None
+
+
+def _save_archived_events(items):
+	for item in items:
+		title = (item.get("title") or "Untitled Event").strip()
+		source = item.get("source") or "aic"
+		start_date_value = _parse_iso_date(item.get("startDate"))
+		city = item.get("city") or "Chicago, IL"
+		event_key = f"{source}|{title.lower()}|{start_date_value or ''}|{city.lower()}"
+
+		ArchivedEvent.objects.update_or_create(
+			event_key=event_key,
+			defaults={
+				"source": source,
+				"source_event_id": str(item.get("sourceId") or "")[:255] or None,
+				"title": title,
+				"museum": item.get("museum") or "Chicago Art Events",
+				"city": city,
+				"start_date": start_date_value,
+				"end_date": _parse_iso_date(item.get("endDate")) or start_date_value,
+				"time_display": item.get("time") or item.get("when") or "Event Time TBA",
+				"description": item.get("description") or "No description available.",
+				"highlights": item.get("highlights") if isinstance(item.get("highlights"), list) else [],
+				"image_url": item.get("image") or item.get("thumbnail"),
+				"ticket_from": float(item.get("ticketFrom") or 20),
+				"link": item.get("link"),
+			},
+		)
+
+
+def _serialize_archived_events(queryset):
+	data = []
+	for event in queryset:
+		data.append(
+			{
+				"id": f"arch-{event.id}",
+				"source": event.source,
+				"sourceId": event.source_event_id,
+				"title": event.title,
+				"museum": event.museum,
+				"city": event.city,
+				"startDate": event.start_date.isoformat() if event.start_date else None,
+				"endDate": event.end_date.isoformat() if event.end_date else None,
+				"time": event.time_display,
+				"description": event.description,
+				"highlights": event.highlights or [],
+				"image": event.image_url,
+				"ticketFrom": event.ticket_from,
+				"link": event.link,
+			}
+		)
+	return data
+
+
+@api_view(["GET"])
+@permission_classes([AllowAny])
+def list_archived_events(request):
+	refresh = str(request.GET.get("refresh", "0")).lower() in {"1", "true", "yes"}
+	q = request.GET.get("q", "").strip() or DEFAULT_EVENTS_QUERY
+
+	if refresh or not ArchivedEvent.objects.exists():
+		combined_events = []
+
+		# Refresh from AIC, but continue even if one source fails.
+		try:
+			aic_data = fetch_exhibition_events(page=1, limit=50, q=None)
+			for item in aic_data.get("data", []):
+				item["source"] = "aic"
+			combined_events.extend(aic_data.get("data", []))
+		except requests.RequestException:
+			pass
+
+		try:
+			serp_data = fetch_serpapi_art_events(query=q, page=1, num=20, pages=3)
+			for item in serp_data.get("data", []):
+				item["source"] = "serp"
+			combined_events.extend(serp_data.get("data", []))
+		except (requests.RequestException, ValueError):
+			pass
+
+		if combined_events:
+			_save_archived_events(combined_events)
+
+	queryset = ArchivedEvent.objects.all().order_by("start_date", "title")
+	return Response({
+		"count": queryset.count(),
+		"data": _serialize_archived_events(queryset),
+		"source": "database",
+	})

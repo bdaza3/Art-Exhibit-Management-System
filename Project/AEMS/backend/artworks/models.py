@@ -44,3 +44,35 @@ class Order(models.Model):
 
     def __str__(self):
         return f"{self.user} - {self.artwork}"
+
+
+class ArchivedEvent(models.Model):
+    SOURCE_CHOICES = [
+        ("aic", "Art Institute of Chicago"),
+        ("serp", "SerpApi Google Events"),
+    ]
+
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES)
+    source_event_id = models.CharField(max_length=255, blank=True, null=True)
+    event_key = models.CharField(max_length=512, unique=True)
+
+    title = models.CharField(max_length=255)
+    museum = models.CharField(max_length=255, blank=True, null=True)
+    city = models.CharField(max_length=255, blank=True, null=True)
+    start_date = models.DateField(blank=True, null=True)
+    end_date = models.DateField(blank=True, null=True)
+    time_display = models.CharField(max_length=255, blank=True, null=True)
+    description = models.TextField(blank=True, null=True)
+    highlights = models.JSONField(default=list, blank=True)
+    image_url = models.URLField(blank=True, null=True)
+    ticket_from = models.FloatField(default=20)
+    link = models.URLField(blank=True, null=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["start_date", "title"]
+
+    def __str__(self):
+        return f"{self.title} ({self.source})"

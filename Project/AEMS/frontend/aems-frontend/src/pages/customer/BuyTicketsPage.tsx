@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./BuyTicketsPage.css";
 import PageTopBar from "../../components/PageTopBar";
@@ -64,14 +64,15 @@ export default function BuyTicketsPage() {
   const location = useLocation() as any;
 
   const preselectId = location?.state?.eventId as string | undefined;
+  const hasPreselectedEvent = !!preselectId && EVENTS.some((e) => e.id === preselectId);
 
-  const [eventId, setEventId] = useState(preselectId || EVENTS[0].id);
+  const [eventId, setEventId] = useState(hasPreselectedEvent ? preselectId! : EVENTS[0].id);
   const [type, setType] = useState<TicketType>("General");
   const [qty, setQty] = useState(2);
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    if (preselectId) setEventId(preselectId);
+    if (hasPreselectedEvent) setEventId(preselectId!);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

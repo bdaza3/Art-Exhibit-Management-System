@@ -1,16 +1,15 @@
-import React, { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./UpcomingEventsPage.css";
-import Event1 from "../assets/Art/art_institute_chicago.jpeg";
-import Event2 from "../assets/Art/MCA.jpeg";
-import Event3 from "../assets/Art/National_Gallery_Victoria.jpeg";
-import Event4 from "../assets/Art/Louvre.jpeg";
-import Event5 from "../assets/Art/Museum_Modern_Art.jpeg";
 import PageTopBar from "../components/PageTopBar";
+import DefaultAicImage from "../assets/Art/art_institute_chicago.jpeg";
+
+const ARCHIVE_EVENTS_API = "http://127.0.0.1:8000/api/events/archive/";
 
 
 type EventItem = {
   id: string;
+  source: "aic" | "serp";
   title: string;
   museum: string;
   city: string;
@@ -23,95 +22,14 @@ type EventItem = {
   ticketFrom: number;
 };
 
-const EVENTS: EventItem[] = [
-  {
-    id: "ev-201",
-    title: "Impressionist Light: Modern Echoes",
-    museum: "The Art Institute of Chicago",
-    city: "Chicago, IL",
-    startDate: "2026-03-01",
-    endDate: "2026-05-15",
-    time: "10:30 AM – 5:00 PM",
-    ticketFrom: 28,
-    description:
-      "A curated exhibition exploring how modern painters reinterpret impressionist color theory, atmospheric perspective, and plein-air composition.",
-    highlights: [
-      "Curator talk every Saturday",
-      "Limited edition catalog",
-      "Interactive brushstroke study wall",
-    ],
-    image: Event1
-     
-  },
-  {
-    id: "ev-202",
-    title: "Urban Noir: Shadows of the City",
-    museum: "Museum of Contemporary Art",
-    city: "Chicago, IL",
-    startDate: "2026-03-12",
-    endDate: "2026-06-20",
-    time: "11:00 AM – 7:00 PM",
-    ticketFrom: 22,
-    description:
-      "Monochrome studies of modern city life—architecture, anonymity, rain, reflection—through charcoal, graphite, and film-inspired photography.",
-    highlights: ["Night hours on Thursdays", "Artist panel", "Print-making demo"],
-    image:Event2
-      
-  },
-  {
-    id: "ev-203",
-    title: "Still Water, Golden Air",
-    museum: "National Gallery of Victoria",
-    city: "Melbourne, AU",
-    startDate: "2026-04-05",
-    endDate: "2026-07-01",
-    time: "10:00 AM – 5:00 PM",
-    ticketFrom: 30,
-    description:
-      "An immersive nature exhibition focused on light, reflection, and the feeling of refuge—lush palettes, layered textures, and tranquil compositions.",
-    highlights: ["Guided tours", "Family day", "Soundscape room"],
-    image: Event3
-      
-  },
-  {
-  id: "ev-204",
-  title: "Renaissance Reimagined: Digital Masters",
-  museum: "The Louvre Digital Wing",
-  city: "Paris, France",
-  startDate: "2026-05-10",
-  endDate: "2026-08-30",
-  time: "9:30 AM – 6:00 PM",
-  ticketFrom: 35,
-  description:
-    "A groundbreaking fusion of classical Renaissance masterpieces and immersive digital projection technology. Experience Michelangelo, Da Vinci, and Botticelli reinterpreted through motion, light, and augmented reality.",
-  highlights: [
-    "360° projection gallery","AI-guided Renaissance tour","Interactive restoration lab demo",],
-  image: Event4 
-},
-{
-  id: "ev-205",
-  title: "Sculpted Silence: Modern Minimalism",
-  museum: "Museum of Modern Art (MoMA)",
-  city: "New York, NY",
-  startDate: "2026-06-01",
-  endDate: "2026-09-15",
-  time: "10:00 AM – 8:00 PM",
-  ticketFrom: 26,
-  description:
-    "An exploration of spatial harmony, shadow, and form. This exhibition features large-scale minimalist sculptures and installations designed to evoke calm, reflection, and architectural balance.",
-  highlights: [
-    "Artist walkthrough series",
-    "Minimalist design workshop",
-    "Evening silent viewing hours",
-  ],
-  image: Event5
-   
-},
-];
-
 function formatDate(d: string) {
   const dt = new Date(d + "T00:00:00");
   return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+function normalizeDate(value: unknown) {
+  const raw = String(value ?? "").slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : new Date().toISOString().slice(0, 10);
 }
 
 export default function UpcomingEventsPage() {
@@ -120,33 +38,94 @@ export default function UpcomingEventsPage() {
   const [museum, setMuseum] = useState("All");
   const [sort, setSort] = useState<"soonest" | "latest">("soonest");
   const [selected, setSelected] = useState<EventItem | null>(null);
+  const [events, setEvents] = useState<EventItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadEvents() {
+      setLoading(true);
+      setError(null);
+
+      try {
+        const res = await fetch(ARCHIVE_EVENTS_API);
+        if (!res.ok) throw new Error("Failed to load archived events");
+        const payload = await res.json();
+        const rows = Array.isArray(payload?.data) ? payload.data : [];
+
+        const deduped: EventItem[] = rows.map((row: any, idx: number) => ({
+          id: String(row.id ?? `${row.source ?? "evt"}-${idx}`),
+          source: row.source === "serp" ? "serp" : "aic",
+          title: String(row.title ?? "Untitled Event"),
+          museum: String(row.museum ?? "Chicago Art Events"),
+          city: String(row.city ?? "Chicago, IL"),
+          startDate: normalizeDate(row.startDate),
+          endDate: normalizeDate(row.endDate ?? row.startDate),
+          time: String(row.time ?? row.when ?? "Event Time TBA"),
+          description: String(row.description ?? "No description available."),
+          highlights: Array.isArray(row.highlights) ? row.highlights.map(String) : [],
+          image: row.image ? String(row.image) : row.thumbnail ? String(row.thumbnail) : DefaultAicImage,
+          ticketFrom: Number(row.ticketFrom ?? 20),
+        }));
+
+        deduped.sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+        if (deduped.length === 0) {
+          throw new Error("No events available");
+        }
+
+        if (!cancelled) {
+          setEvents(deduped);
+        }
+      } catch {
+        if (!cancelled) {
+          setError("Could not load live events right now.");
+          setEvents([]);
+        }
+      } finally {
+        if (!cancelled) {
+          setLoading(false);
+        }
+      }
+    }
+
+    loadEvents();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const museums = useMemo(() => {
-    const unique = Array.from(new Set(EVENTS.map((e) => e.museum)));
+    const unique = Array.from(new Set(events.map((e) => e.museum)));
     return ["All", ...unique];
-  }, []);
+  }, [events]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = EVENTS.filter((e) => {
-      const matchesQuery =
-        !q ||
+    let list = events.filter((e) => {
+      const matchesMuseum = museum === "All" || e.museum === museum;
+      if (!matchesMuseum) return false;
+
+      // Keep all museum-matching events visible until the user enters a search term.
+      if (!q) return true;
+
+      return (
         e.title.toLowerCase().includes(q) ||
         e.museum.toLowerCase().includes(q) ||
-        e.city.toLowerCase().includes(q);
-
-      const matchesMuseum = museum === "All" || e.museum === museum;
-      return matchesQuery && matchesMuseum;
+        e.city.toLowerCase().includes(q)
+      );
     });
 
-    list = list.sort((a, b) =>
+    list = [...list].sort((a, b) =>
       sort === "soonest"
         ? a.startDate.localeCompare(b.startDate)
         : b.startDate.localeCompare(a.startDate)
     );
 
     return list;
-  }, [query, museum, sort]);
+  }, [events, query, museum, sort]);
 
   function goBuyTickets(ev: EventItem) {
     // pass selection to tickets page
@@ -182,6 +161,11 @@ export default function UpcomingEventsPage() {
       </div>
 
       <div className="events-grid">
+          {loading && <p className="muted">Loading events...</p>}
+          {!loading && error && <p className="muted">{error}</p>}
+          {!loading && !error && filtered.length === 0 && (
+            <p className="muted">No events found for your current filters.</p>
+          )}
           {filtered.map((ev) => (
     <button
       key={ev.id}
@@ -193,6 +177,8 @@ export default function UpcomingEventsPage() {
         className="event-cover"
         style={{
           backgroundImage: ev.image ? `url(${ev.image})` : "none",
+          backgroundSize: ev.source === "serp" ? "contain" : "cover",
+          backgroundRepeat: "no-repeat",
         }}
       >
 
@@ -236,9 +222,9 @@ export default function UpcomingEventsPage() {
               <div
                 className="modal-image"
                 style={{
-                  backgroundImage: selected.image
-                    ? `linear-gradient(0deg, rgba(0,0,0,.55), rgba(0,0,0,.15)), url(${selected.image})`
-                    : undefined,
+                  backgroundImage: selected.image ? `url(${selected.image})` : undefined,
+                  backgroundSize: selected.source === "serp" ? "contain" : "cover",
+                  backgroundRepeat: "no-repeat",
                 }}
               />
 
