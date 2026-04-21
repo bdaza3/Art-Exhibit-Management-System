@@ -1,288 +1,386 @@
-import {Box, Button, Typography, Paper} from "@mui/material"
-import {useEffect, useState, useMemo} from "react"
-import { useNavigate, Link } from "react-router-dom"
-import "./AdminDashboard.css"
-import AdminSideBar from "../../components/admin/AdminSideBar"
-import { shadow } from "three/src/nodes/lighting/ShadowNode.js"
+import { Button } from "@mui/material";
+import { useEffect, useMemo, useState } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import "./AdminDashboard.css";
+import AdminSideBar from "../../components/admin/AdminSideBar";
+import {
+  buildDashboardMetrics,
+  buildTopArtworks,
+  buildTrendSeries,
+  fetchAdminAnalyticsData,
+  formatCompactCurrency,
+  formatCurrency,
+  formatDelta,
+} from "./adminAnalytics";
+import type { AnalyticsBundle, AuctionRecord, RangeKey } from "./adminAnalytics";
 
-const formatRelativeTime = (value: string | number | Date) => {
-  const date = new Date(value)
+const DASHBOARD_RANGE: RangeKey = "30d";
 
-  if (Number.isNaN(date.getTime())) {
-    return "—"
-  }
+const formatRelativeTime = (value?: string) => {
+  if (!value) return "Unknown";
 
-  const diffInSeconds = Math.round((date.getTime() - Date.now()) / 1000)
-  const absDiffInSeconds = Math.abs(diffInSeconds)
-  const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" })
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Unknown";
 
-  if (absDiffInSeconds < 60) {
-    return formatter.format(diffInSeconds, "second")
-  }
+  const diffInSeconds = Math.round((date.getTime() - Date.now()) / 1000);
+  const absDiffInSeconds = Math.abs(diffInSeconds);
+  const formatter = new Intl.RelativeTimeFormat("en", { numeric: "auto" });
 
-  const diffInMinutes = Math.round(diffInSeconds / 60)
-  const absDiffInMinutes = Math.abs(diffInMinutes)
+  if (absDiffInSeconds < 60) return formatter.format(diffInSeconds, "second");
 
-  if (absDiffInMinutes < 60) {
-    return formatter.format(diffInMinutes, "minute")
-  }
+  const diffInMinutes = Math.round(diffInSeconds / 60);
+  if (Math.abs(diffInMinutes) < 60) return formatter.format(diffInMinutes, "minute");
 
-  const diffInHours = Math.round(diffInMinutes / 60)
-  const absDiffInHours = Math.abs(diffInHours)
+  const diffInHours = Math.round(diffInMinutes / 60);
+  if (Math.abs(diffInHours) < 24) return formatter.format(diffInHours, "hour");
 
-  if (absDiffInHours < 24) {
-    return formatter.format(diffInHours, "hour")
-  }
-
-  const diffInDays = Math.round(diffInHours / 24)
-  return formatter.format(diffInDays, "day")
-}
+  const diffInDays = Math.round(diffInHours / 24);
+  return formatter.format(diffInDays, "day");
+};
 
 export default function AdminDashboard() {
-  const navigate = useNavigate()
-  const username = localStorage.getItem("username") || "Curator"
+  const navigate = useNavigate();
+  const username = localStorage.getItem("username") || "Curator";
 
-  const [metrics, setMetrics] = useState({ artworks: 0, exhibitions: 0, upcomingExhibitions: 0, activeAuctions: 0, totalSales: 0 })
-  const [upcoming, setUpcoming] = useState<any[]>([])
-  const [recentOrders, setRecentOrders] = useState<any[]>([])
-
-  const logout = () => {
-    localStorage.clear()
-    navigate("/")
-  }
+  const [data, setData] = useState<AnalyticsBundle | null>(null);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const fetchAll = async () => {
-      try {
-        const [artsRes, exRes, exListRes, aucRes, ordersRes] = await Promise.all([
-          fetch("http://127.0.0.1:8000/api/artworks/"),
-          fetch("http://127.0.0.1:8000/api/exhibitions/stats/"),
-          fetch("http://127.0.0.1:8000/api/exhibitions/"),
-          fetch("http://127.0.0.1:8000/api/auctions/"),
-          fetch("http://127.0.0.1:8000/api/orders/"),
-        ])
+    let active = true;
 
-        const arts = await artsRes.json()
-        const ex = await exRes.json()
-        const exList = await exListRes.json()
-        const auc = await aucRes.json()
-        const orders = await ordersRes.json()
-
-        const totalSales = Array.isArray(orders) ? orders.reduce((s: number, o: any) => s + (Number(o.total) || 0), 0) : 0
-
-        setMetrics({
-          artworks: Array.isArray(arts) ? arts.length : 0,
-          exhibitions: ex.total || 0,
-          upcomingExhibitions: ex.upcoming || 0,
-          activeAuctions: Array.isArray(auc) ? auc.filter((a: any) => a.status === 'active').length : 0,
-          totalSales,
-        })
-
-        // upcoming exhibitions (by date)
-        if (Array.isArray(exList)) {
-          const now = new Date()
-          const upcomingSorted = exList
-            .filter((e: any) => (e.date || e.start_date) && new Date(e.date || e.start_date) >= now)
-            .sort((a: any, b: any) => new Date(a.date || a.start_date).getTime() - new Date(b.date || b.start_date).getTime())
-            .slice(0, 5)
-          setUpcoming(upcomingSorted)
-        }
-
-        if (Array.isArray(orders)) {
-          const recent = orders.slice().sort((a: any,b: any) => (new Date(b.created_at).getTime() - new Date(a.created_at).getTime())).slice(0,5)
-          setRecentOrders(recent)
-        }
-
-      } catch (err) {
-        console.error(err)
-      }
+    async function loadDashboard() {
+      setLoading(true);
+      const payload = await fetchAdminAnalyticsData();
+      if (!active) return;
+      setData(payload);
+      setLoading(false);
     }
 
-    fetchAll()
-  }, [])
+    loadDashboard();
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  const metrics = useMemo(() => {
+    if (!data) return null;
+    return buildDashboardMetrics(data, DASHBOARD_RANGE);
+  }, [data]);
+
+  const chartSeries = useMemo(() => {
+    if (!data) return [];
+    return buildTrendSeries(data, DASHBOARD_RANGE, "All");
+  }, [data]);
+
+  const topArtworks = useMemo(() => {
+    if (!data) return [];
+    return buildTopArtworks(data, DASHBOARD_RANGE).slice(0, 4);
+  }, [data]);
+
+  const recentOrders = useMemo(() => {
+    if (!data) return [];
+    return data.orders
+      .slice()
+      .sort((left, right) => new Date(right.created_at || "").getTime() - new Date(left.created_at || "").getTime())
+      .slice(0, 5);
+  }, [data]);
+
+  const upcomingExhibitions = useMemo(() => {
+    if (!data) return [];
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    return data.exhibitions
+      .filter((exhibition) => {
+        const date = exhibition.date ? new Date(exhibition.date) : null;
+        return date && !Number.isNaN(date.getTime()) && date >= today;
+      })
+      .sort((left, right) => new Date(left.date || "").getTime() - new Date(right.date || "").getTime())
+      .slice(0, 4);
+  }, [data]);
+
+  const recentAuctionActivity = useMemo(() => {
+    if (!data) return [];
+
+    return data.auctions
+      .filter((auction) => Array.isArray(auction.bids) && auction.bids.length > 0)
+      .map((auction) => {
+        const latestBid = auction.bids![0];
+        return { auction, latestBid };
+      })
+      .sort((left, right) => new Date(right.latestBid.timestamp || "").getTime() - new Date(left.latestBid.timestamp || "").getTime())
+      .slice(0, 4);
+  }, [data]);
+
+  const logout = () => {
+    localStorage.clear();
+    navigate("/");
+  };
 
   return (
-    <div style={{ display: 'flex' }}>
+    <div style={{ display: "flex" }}>
       <AdminSideBar />
 
       <div className="admin-page">
-        <div className="dash-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <div className="dash-header dashboard-header-row">
           <div>
-            <h1 style={{ margin: 0 }}>Welcome back, {username}.</h1>
-            <p className="muted">Here's the latest snapshot of your gallery and upcoming events.</p>
+            <h1 className="admin-title">Welcome back, {username}.</h1>
+            <p className="muted">A cleaner view of the last 30 days across orders, tickets, exhibitions, and auctions.</p>
           </div>
 
-          <div style={{ display: 'flex', gap: 10, alignItems: 'center' }}>
-            <Button variant="contained" onClick={() => navigate('/admin/events')} sx={{ bgcolor: '#d4af37', color: '#000', transition: 'transform 0.2s', textTransform: 'none', ":hover": { transform: 'scale(1.05)'} }}>New Exhibition</Button>
-            <Button variant="outlined" onClick={() => navigate('/admin/arts')} sx={{ color: '#000000', borderColor: '#d4af37',textTransform: 'none', transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Add Artwork</Button>
-            <Button onClick={logout} sx={{ color: '#fff', background: 'transparent', transition: 'transform 0.2s',border: '1px solid rgba(255,255,255,0.06)', ":hover": { transform: 'scale(1.05)'}}}>Logout</Button>
+          <div className="dashboard-actions">
+            <Button variant="contained" onClick={() => navigate("/admin/events")} sx={{ bgcolor: "#d4af37", color: "#111", textTransform: "none", borderRadius: "12px" }}>
+              New Exhibition
+            </Button>
+            <Button variant="outlined" onClick={() => navigate("/admin/arts")} sx={{ color: "#fff", borderColor: "rgba(212,175,55,0.45)", textTransform: "none", borderRadius: "12px" }}>
+              Add Artwork
+            </Button>
+            <Button onClick={logout} sx={{ color: "#fff", border: "1px solid rgba(255,255,255,0.12)", textTransform: "none", borderRadius: "12px" }}>
+              Logout
+            </Button>
           </div>
         </div>
 
-        <div style={{ marginTop: 18 }}>
-          <div className="management-grid" style={{ justifyContent: 'flex-start' }}>
-            <div className="management-card">
-              <Box>
-                <Typography sx={{ color: '#d4af37', fontWeight: 700 }}>Total Sales</Typography>
-                <Typography variant="h5">${metrics.totalSales.toFixed(2)}</Typography>
-                <Typography variant="caption" className="muted">Last 30 days</Typography>
-              </Box>
-            </div>
+        {loading && <p className="muted">Loading dashboard data...</p>}
 
-            <div className="management-card">
-              <Box>
-                <Typography sx={{ color: '#d4af37', fontWeight: 700 }}>Artworks</Typography>
-                <Typography variant="h5">{metrics.artworks}</Typography>
-                <Typography variant="caption" className="muted">Total in collection</Typography>
-              </Box>
-            </div>
+        {metrics && (
+          <div className="dashboard-stack">
+            <section className="dashboard-summary-grid">
+              <SummaryCard title="Gross Sales" value={formatCurrency(metrics.revenue.value)} delta={metrics.revenue.delta} accent="gold" />
+              <SummaryCard title="Orders" value={metrics.orders.value.toLocaleString()} delta={metrics.orders.delta} />
+              <SummaryCard title="Tickets Sold" value={metrics.tickets.value.toLocaleString()} delta={metrics.tickets.delta} />
+              <SummaryCard title="Customers" value={metrics.customers.value.toLocaleString()} delta={metrics.customers.delta} />
+              <SnapshotCard title="Live Auctions" value={metrics.activeAuctions.toLocaleString()} subtitle="Currently active" />
+              <SnapshotCard title="Avg. Order" value={formatCurrency(metrics.averageOrderValue)} subtitle="Across the last 30 days" />
+            </section>
 
-            <div className="management-card">
-              <Box>
-                <Typography sx={{ color: '#d4af37', fontWeight: 700 }}>Upcoming Exhibitions</Typography>
-                <Typography variant="h5">{metrics.upcomingExhibitions}</Typography>
-                <Typography variant="caption" className="muted">Scheduled</Typography>
-              </Box>
-            </div>
-
-            <div className="management-card">
-              <Box>
-                <Typography sx={{ color: '#d4af37', fontWeight: 700 }}>Active Auctions</Typography>
-                <Typography variant="h5">{metrics.activeAuctions}</Typography>
-                <Typography variant="caption" className="muted">Live now</Typography>
-              </Box>
-            </div>
-          </div>
-
-          <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: 20, marginTop: 20 }}>
-            <div>
-              <Paper className="management-card panel-card" sx={{ padding: 12, background: 'linear-gradient(180deg, rgba(6,6,8,0.98), rgba(10,10,12,1))', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <Typography variant="h6" sx={{ color: '#d4af37', paddingRight: 2 }}>Upcoming Exhibitions</Typography>
-                <div style={{ marginTop: 10 }}>
-                  {upcoming.length === 0 && <p className="muted">No upcoming exhibitions.</p>}
-                  {upcoming.map((e: any) => (
-                    <div key={e.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
-                      <div style={{ width: 84, height: 54, flex: '0 0 84px', borderRadius: 6, overflow: 'hidden', background: 'rgba(255,255,255,0.02)' }}>
-                        {e.image ? <img src={e.image} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.45)' }}>No image</div>}
-                      </div>
-
-                      <div style={{ flex: 1 }}>
-                        <div style={{ fontWeight: 600, color: '#fff' }}>{e.title}</div>
-                        <div className="muted">Starts {e.date ? formatRelativeTime(e.date) : (e.start_date ? formatRelativeTime(e.start_date) : '—')}</div>
-                      </div>
-                    </div>
-                  ))}
+            <section className="dashboard-main-grid">
+              <div className="admin-surface dashboard-chart-panel">
+                <div className="admin-surface-header">
+                  <div>
+                    <h2 className="admin-surface-title">Sales Overview</h2>
+                    <p className="muted small-copy">Real revenue totals grouped across the last 30 days.</p>
+                  </div>
+                  <Link to="/admin/reports" className="dashboard-inline-link">Open reports</Link>
                 </div>
-              </Paper>
-            </div>
 
-            <div>
-              <Paper className="management-card panel-card" sx={{ padding: 12, background: 'linear-gradient(180deg, rgba(6,6,8,0.98), rgba(10,10,12,1))', border: '1px solid rgba(255,255,255,0.04)' }}>
-                <Typography variant="h6" sx={{ color: '#d4af37', paddingRight: 2 }}>Recent Orders</Typography>
-                <div style={{ marginTop: 10 }}>
-                  {recentOrders.length === 0 && <p className="muted">No orders yet.</p>}
-                  {recentOrders.map((o: any) => (
-                    <div key={o.id} style={{ display: 'flex', justifyContent: 'space-between', padding: '8px 0', borderBottom: '1px solid rgba(255,255,255,0.04)' }}>
+                <DashboardChart data={chartSeries} />
+
+                <div className="dashboard-chart-highlights">
+                  <HighlightStat label="Upcoming Exhibitions" value={metrics.upcomingExhibitions.toLocaleString()} />
+                  <HighlightStat label="Sold Artworks" value={metrics.soldArtworks.toLocaleString()} />
+                  <HighlightStat label="Period Revenue" value={formatCompactCurrency(metrics.revenue.value)} />
+                </div>
+              </div>
+
+              <div className="dashboard-side-stack">
+                <div className="admin-surface">
+                  <div className="admin-surface-header">
+                    <h2 className="admin-surface-title">Top Artworks</h2>
+                    <span className="muted small-copy">By revenue in the last 30 days</span>
+                  </div>
+
+                  <div className="dashboard-list">
+                    {topArtworks.length === 0 && <div className="empty-note muted">No artwork sales recorded yet.</div>}
+                    {topArtworks.map((artwork) => (
+                      <div className="dashboard-list-row" key={artwork.name}>
+                        <div>
+                          <div className="dashboard-list-title">{artwork.name}</div>
+                          <div className="muted small-copy">{artwork.sub}</div>
+                        </div>
+                        <div className="dashboard-list-value">{formatCurrency(artwork.value)}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="admin-surface">
+                  <div className="admin-surface-header">
+                    <h2 className="admin-surface-title">Recent Auction Activity</h2>
+                    <span className="muted small-copy">Latest bids across active and closed auctions</span>
+                  </div>
+
+                  <div className="dashboard-list">
+                    {recentAuctionActivity.length === 0 && <div className="empty-note muted">No bids have been placed yet.</div>}
+                    {recentAuctionActivity.map(({ auction, latestBid }) => (
+                      <AuctionActivityRow key={auction.id} auction={auction} bid={latestBid} />
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            <section className="dashboard-lower-grid">
+              <div className="admin-surface">
+                <div className="admin-surface-header">
+                  <h2 className="admin-surface-title">Recent Orders</h2>
+                  <Link to="/admin/orders" className="dashboard-inline-link">Manage orders</Link>
+                </div>
+
+                <div className="dashboard-list">
+                  {recentOrders.length === 0 && <div className="empty-note muted">No customer orders have been recorded yet.</div>}
+                  {recentOrders.map((order) => (
+                    <div className="dashboard-list-row" key={order.id}>
                       <div>
-                        <div style={{ fontWeight: 600 }}>#{o.id} — {o.customer}</div>
-                        <div className="muted">{o.created_at ? formatRelativeTime(o.created_at) : ''}</div>
+                        <div className="dashboard-list-title">Order #{order.id} from {order.customer || "Customer"}</div>
+                        <div className="muted small-copy">{order.artwork_title || order.items?.[0]?.title || "Purchased item"} • {formatRelativeTime(order.created_at)}</div>
                       </div>
-                      <div style={{ textAlign: 'right' }}>
-                        <div className="art-price">${Number(o.total || 0).toFixed(2)}</div>
-                        <div className="model-badge">{o.status}</div>
+                      <div className="dashboard-order-meta">
+                        <div className="dashboard-list-value">{formatCurrency(Number(order.total || order.total_price || 0))}</div>
+                        <span className="status-badge">{order.status || "Pending"}</span>
                       </div>
                     </div>
                   ))}
                 </div>
-              </Paper>
-            </div>
-          </div>
+              </div>
 
-          {/* Analytics metrics */}
-          <div className="analytics-grid">
-            <div className="metric-small">
-              <div className="label">Ticket Sales (Past 30 days)</div>
-              <div className="value">$0.00</div>
-            </div>
-            <div className="metric-small">
-              <div className="label">Average Sale</div>
-              <div className="value">$0.00</div>
-            </div>
-            <div className="metric-small">
-              <div className="label">Visitors</div>
-              <div className="value">0</div>
-            </div>
-            <div className="metric-small">
-              <div className="label">Top Selling Artwork</div>
-              <div className="value">N/A</div>
-            </div>
-          </div>
+              <div className="admin-surface">
+                <div className="admin-surface-header">
+                  <h2 className="admin-surface-title">Upcoming Exhibitions</h2>
+                  <Link to="/admin/events" className="dashboard-inline-link">Manage exhibitions</Link>
+                </div>
 
-          <div className="analytics-bottom">
-            <div className="chart-placeholder">
-              <SalesSparkChart orders={recentOrders} />
-            </div>
-            <div className="top-list">
-              <div style={{ fontWeight: 700, color: '#d4af37', marginBottom: 8 }}>Top 5 Artworks</div>
-              <div className="muted">No data available</div>
-            </div>
+                <div className="dashboard-list">
+                  {upcomingExhibitions.length === 0 && <div className="empty-note muted">No upcoming exhibitions are scheduled.</div>}
+                  {upcomingExhibitions.map((exhibition) => (
+                    <div className="dashboard-event-row" key={exhibition.id}>
+                      <div className="dashboard-event-thumb">
+                        {exhibition.image ? (
+                          <img src={exhibition.image} alt={exhibition.title} />
+                        ) : (
+                          <div className="dashboard-event-placeholder">No image</div>
+                        )}
+                      </div>
+
+                      <div className="dashboard-event-copy">
+                        <div className="dashboard-list-title">{exhibition.title}</div>
+                        <div className="muted small-copy">{exhibition.venue || exhibition.location || "Exhibition venue"}</div>
+                        <div className="muted small-copy">{exhibition.date ? new Date(exhibition.date).toLocaleDateString() : "Date TBD"}</div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </section>
           </div>
-        </div>
+        )}
       </div>
     </div>
-  )
+  );
 }
 
-function SalesSparkChart({ orders }: { orders: any[] }) {
-  const series = useMemo(() => {
-    const days = 7
-    const labels: string[] = []
-    const values: number[] = []
-    const now = new Date()
-
-    for (let i = days - 1; i >= 0; i--) {
-      const d = new Date(now)
-      d.setDate(now.getDate() - i)
-      labels.push(d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }))
-
-      const dayStart = new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime()
-      const dayEnd = dayStart + 24 * 60 * 60 * 1000
-
-      const total = Array.isArray(orders)
-        ? orders.reduce((s: number, o: any) => {
-            const t = o.created_at ? new Date(o.created_at).getTime() : 0
-            return t >= dayStart && t < dayEnd ? s + (Number(o.total) || 0) : s
-          }, 0)
-        : 0
-
-      values.push(total)
-    }
-
-    return { labels, values }
-  }, [orders])
-
-  const max = Math.max(...series.values, 1)
-
+function SummaryCard({
+  title,
+  value,
+  delta,
+  accent,
+}: {
+  title: string;
+  value: string;
+  delta: number;
+  accent?: "gold";
+}) {
   return (
-    <div style={{ width: '100%' }}>
-      <svg viewBox={`0 0 ${series.values.length * 18} 60`} preserveAspectRatio="none" style={{ width: '100%', height: 60 }}>
-        {series.values.map((v, i) => {
-          const barH = Math.round((v / max) * 44)
-          const x = i * 18 + 6
-          const y = 52 - barH
-          return (
-            <rect key={i} x={x} y={y} width={10} height={barH} rx={2} fill="#d4af37" opacity={0.95} />
-          )
-        })}
-      </svg>
+    <div className={`dashboard-stat-card ${accent === "gold" ? "is-gold" : ""}`}>
+      <div className="dashboard-stat-label">{title}</div>
+      <div className="dashboard-stat-value">{value}</div>
+      <div className={`dashboard-stat-delta ${delta >= 0 ? "up" : "down"}`}>{formatDelta(delta)} vs previous period</div>
+    </div>
+  );
+}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 6, fontSize: 11, color: 'rgba(255,255,255,0.7)' }}>
-        {series.labels.map((lbl, i) => (
-          <div key={i} style={{ flex: 1, textAlign: 'center', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-            {lbl}
-          </div>
-        ))}
+function SnapshotCard({ title, value, subtitle }: { title: string; value: string; subtitle: string }) {
+  return (
+    <div className="dashboard-stat-card">
+      <div className="dashboard-stat-label">{title}</div>
+      <div className="dashboard-stat-value">{value}</div>
+      <div className="dashboard-stat-subtitle">{subtitle}</div>
+    </div>
+  );
+}
+
+function HighlightStat({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="dashboard-highlight">
+      <span>{label}</span>
+      <strong>{value}</strong>
+    </div>
+  );
+}
+
+function AuctionActivityRow({
+  auction,
+  bid,
+}: {
+  auction: AuctionRecord;
+  bid: NonNullable<AuctionRecord["bids"]>[number];
+}) {
+  return (
+    <div className="dashboard-list-row">
+      <div>
+        <div className="dashboard-list-title">{auction.artwork?.title || `Auction #${auction.id}`}</div>
+        <div className="muted small-copy">
+          {bid.user?.username || (bid.anonymous ? "Anonymous bidder" : "Bidder")} • {formatRelativeTime(bid.timestamp)}
+        </div>
+      </div>
+      <div className="dashboard-order-meta">
+        <div className="dashboard-list-value">{formatCurrency(Number(bid.amount || 0))}</div>
+        <span className="status-badge">{auction.status || "scheduled"}</span>
       </div>
     </div>
-  )
+  );
+}
+
+function DashboardChart({ data }: { data: Array<{ key: string; label: string; value: number }> }) {
+  const max = Math.max(...data.map((point) => point.value), 1);
+  const width = 720;
+  const height = 260;
+  const padding = 24;
+  const usableWidth = width - padding * 2;
+  const usableHeight = height - padding * 2;
+
+  const points = data.map((point, index) => {
+    const x = data.length === 1 ? width / 2 : padding + (index / (data.length - 1)) * usableWidth;
+    const y = height - padding - (point.value / max) * usableHeight;
+    return { ...point, x, y };
+  });
+
+  const linePath = points.map((point, index) => `${index === 0 ? "M" : "L"} ${point.x} ${point.y}`).join(" ");
+  const areaPath = points.length
+    ? `${linePath} L ${points[points.length - 1].x} ${height - padding} L ${points[0].x} ${height - padding} Z`
+    : "";
+
+  return (
+    <div className="dashboard-chart-shell">
+      {data.every((point) => point.value === 0) ? (
+        <div className="empty-note muted">Sales data will appear here once orders start coming in.</div>
+      ) : (
+        <>
+          <svg viewBox={`0 0 ${width} ${height}`} className="dashboard-chart-svg" preserveAspectRatio="none">
+            {[0, 0.25, 0.5, 0.75, 1].map((step) => {
+              const y = height - padding - step * usableHeight;
+              return <line key={step} x1={padding} x2={width - padding} y1={y} y2={y} className="dashboard-chart-gridline" />;
+            })}
+            <path d={areaPath} className="dashboard-chart-area" />
+            <path d={linePath} className="dashboard-chart-line" />
+            {points.map((point) => (
+              <g key={point.key}>
+                <circle cx={point.x} cy={point.y} r="4" className="dashboard-chart-point" />
+                <title>{`${point.label}: ${formatCurrency(point.value)}`}</title>
+              </g>
+            ))}
+          </svg>
+
+          <div className="dashboard-chart-labels">
+            {data.map((point) => (
+              <div className="dashboard-chart-label" key={point.key}>
+                <span>{point.label}</span>
+                <strong>{formatCompactCurrency(point.value)}</strong>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
+    </div>
+  );
 }
