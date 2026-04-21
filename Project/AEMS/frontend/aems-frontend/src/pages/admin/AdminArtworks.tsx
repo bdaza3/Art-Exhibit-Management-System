@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import AdminSideBar from "../../components/admin/AdminSideBar";
 import ArtViewer3D from "../../components/customer/3DArtworkViewer";
+import "./AdminDashboard.css";
 import "./AdminArtworks.css";
 
 const API_BASE = "http://127.0.0.1:8000/api/artworks/";
@@ -263,6 +264,7 @@ export default function AdminArtworks() {
   };
 
   const categories = Array.from(new Set(artworks.map((a) => a.category).filter(Boolean)));
+  const modeledCount = artworks.filter((art) => art.model_3d).length;
 
   const filtered = artworks.filter((a) => {
     const q = query.trim().toLowerCase();
@@ -280,17 +282,20 @@ export default function AdminArtworks() {
       <AdminSideBar />
 
       <div className="admin-page">
-        <h1 className="admin-title">Manage Artworks</h1>
-        
-        <div className="list-controls">
-          <input className="search" placeholder="Search title, artist, description..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          <select value={categoryFilter} onChange={(e) => setCategoryFilter(e.target.value)}>
-            <option value="">All categories</option>
-            {categories.map((c) => <option key={c} value={c}>{c}</option>)}
-          </select>
+        <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h1 className="admin-title">Artworks</h1>
+            <p className="muted">Manage the gallery catalog, media, and 3D-ready listings with the same dashboard look and spacing.</p>
+          </div>
         </div>
-        
-        <div className="art-form">
+
+        <div className="art-form admin-surface">
+          <div className="admin-surface-header">
+            <div>
+              <h2 className="admin-surface-title">Add New Artwork</h2>
+              <div className="section-note">Upload an image, attach an optional 3D model, and publish without leaving the page.</div>
+            </div>
+          </div>
           <div className="form-grid">
             <div className="form-preview">
               <div className="preview-box">
@@ -364,7 +369,7 @@ export default function AdminArtworks() {
         ) : (
           <div className="art-grid">
             {filtered.map((art) => (
-              <div key={art.id || art.title} className="art-card">
+              <div key={art.id || art.title} className="art-card compact-card">
                 {art.image && <img src={art.image} className="art-image" alt={art.title} />}
                 <div className="art-body">
                   <div className="art-title">{art.title}</div>

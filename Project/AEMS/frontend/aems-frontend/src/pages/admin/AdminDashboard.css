@@ -130,3 +130,104 @@
 }
 
 .management-grid .management-card > div > .muted { color: rgba(255,255,255,0.55) }
+
+.admin-page {
+  margin-left: 150px;
+  width: calc(100% - 150px);
+  min-height: 100vh;
+  padding: 24px 40px 32px 24px;
+  box-sizing: border-box;
+}
+
+.admin-section-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.admin-surface {
+  border-radius: 18px;
+  padding: 18px;
+  background: linear-gradient(180deg, rgba(6,6,8,0.94), rgba(10,10,14,0.98));
+  border: 1px solid rgba(255,255,255,0.05);
+  box-shadow: 0 16px 40px rgba(0,0,0,0.26);
+}
+
+.admin-surface-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.admin-surface-title {
+  margin: 0;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.admin-toolbar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.admin-toolbar > * {
+  min-height: 42px;
+}
+
+.admin-toolbar .search,
+.admin-toolbar select,
+.admin-toolbar input,
+.admin-toolbar textarea {
+  border-radius: 12px;
+  border: 1px solid rgba(212,175,55,0.18);
+  background: rgba(255,255,255,0.04);
+  color: #fff;
+}
+
+.admin-toolbar select,
+.admin-toolbar input {
+  padding: 10px 12px;
+}
+
+.admin-toolbar select option {
+  background: #111;
+  color: #fff;
+}
+
+.admin-grid-2 {
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: 18px;
+}
+
+.admin-list-stack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+@media (max-width: 900px) {
+  .admin-page {
+    margin-left: 0;
+    width: 100%;
+    padding: 20px;
+  }
+
+  .admin-surface {
+    padding: 16px;
+  }
+
+  .admin-grid-2 {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-surface-header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}

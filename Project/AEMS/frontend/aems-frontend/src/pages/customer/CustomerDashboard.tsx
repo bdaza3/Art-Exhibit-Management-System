@@ -313,7 +313,7 @@ export default function CustomerDashboard() {
 
         {/* HERO HEADER */}
         <div ref={homeRef} className="dash-header">
-          <h2>Welcome back, {username} 🎨</h2>
+          <h2>Welcome back, {username}.</h2>
         </div>
 
         {/* CARDS */}
@@ -394,7 +394,6 @@ export default function CustomerDashboard() {
           <div className="art-hero">
             <div>
               <h2>View / Buy Art</h2>            <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-              {/*<button className="btn btn-ghost" onClick={() => setShow3DTest(true)}>Open 3D Test</button>*/}
             </div>
               <p className="muted">Explore curated works by artists. Click any piece for full details.</p>
             </div>
@@ -541,7 +540,6 @@ export default function CustomerDashboard() {
             </div>
           </div>
         )}
-        {/*end of test*/}
       </div>
     </div>
   )

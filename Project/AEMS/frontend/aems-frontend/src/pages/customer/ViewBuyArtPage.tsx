@@ -7,10 +7,6 @@ import SideBar from "../../components/customer/SideBar";
 import ArtViewer3D from "../../components/customer/3DArtworkViewer";
 import { addToCart, formatMoney } from "../../components/artData";
 
-
-
-
-
 const API_BASE = "http://127.0.0.1:8000/api/artworks/";
 
 type Artwork = {
@@ -113,7 +109,7 @@ export default function ViewBuyArtPage() {
     return list;
   }, [artworks, query, artist, sort]);
 
-  // 🛒 ADD TO CART
+  // ADD TO CART
   function onAdd(art: any) {
     addToCart(art);
     setToast(`Added "${art.title}"`);

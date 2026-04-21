@@ -1,5 +1,6 @@
-import React, { useMemo, useState, useEffect } from "react";
+import { useMemo, useState, useEffect } from "react";
 import AdminSideBar from "../../components/admin/AdminSideBar";
+import "./AdminDashboard.css";
 import "./AdminReports.css";
 
 type Range = "7d" | "30d" | "90d" | "ytd";
@@ -17,7 +18,7 @@ type Activity = {
 type TopItem = {
   name: string;
   sub: string;
-  value: number; 
+  value: number;
 };
 
 function money(n: number) {
@@ -83,9 +84,7 @@ export default function AdminReports() {
     return () => { mounted = false };
   }, [range, category]);
 
-  // --- Fake aggregated metrics (used as fallback)
   const metrics = useMemo(() => {
-   
     const mult = range === "7d" ? 0.35 : range === "30d" ? 1 : range === "90d" ? 2.4 : 3.1;
 
     const base = {
@@ -94,7 +93,6 @@ export default function AdminReports() {
       tickets: Math.round(312 * mult),
       auctions: Math.round(9 * mult),
       customers: Math.round(41 * mult),
-      
       revDelta: 8.2,
       ordersDelta: 3.6,
       ticketsDelta: 6.9,
@@ -102,7 +100,6 @@ export default function AdminReports() {
       customersDelta: 4.8,
     };
 
-    
     if (category === "Art Sales") {
       return { ...base, tickets: 0, ticketsDelta: 0, auctions: 0, auctionsDelta: 0 };
     }
@@ -119,7 +116,6 @@ export default function AdminReports() {
   const display = backendMetrics ? { ...backendMetrics, revDelta: 0, ordersDelta: 0, ticketsDelta: 0, auctionsDelta: 0, customersDelta: 0 } : metrics;
 
   const revenueByMonth = useMemo(() => {
-    
     const raw = [22, 38, 35, 56, 61, 47, 72, 66, 80, 93, 88, 100];
     const label = ["J", "F", "M", "A", "M", "J", "J", "A", "S", "O", "N", "D"];
     return raw.map((v, i) => ({ v, label: label[i] }));
@@ -157,7 +153,6 @@ export default function AdminReports() {
   );
 
   function exportCSV() {
-    
     const rows = [
       ["time", "type", "title", "amount", "status"],
       ...activity.map((a) => [a.time, a.type, a.title, a.amount ?? "", a.status]),
@@ -176,14 +171,13 @@ export default function AdminReports() {
   }
 
   return (
-    <div className="dashboard-layout">
+    <div style={{ display: "flex" }}>
       <AdminSideBar />
 
-      <div className="dashboard-content">
-        {/* Header */}
+      <div className="admin-page">
         <div className="reports-header">
           <div>
-            <h2>Reports</h2>
+            <h1 className="admin-title" style={{ marginBottom: 8 }}>Reports</h1>
             <p className="muted">Track sales, tickets, auctions, and customer activity.</p>
           </div>
 
@@ -214,7 +208,6 @@ export default function AdminReports() {
           </div>
         </div>
 
-        {/* KPI grid */}
         <div className="kpi-grid">
           <KPI title="Revenue" value={money(display.revenue)} delta={display.revDelta ?? 0} />
           <KPI title="Orders" value={(display.orders || 0).toLocaleString()} delta={display.ordersDelta ?? 0} />
@@ -223,12 +216,11 @@ export default function AdminReports() {
           <KPI title="New Customers" value={(display.customers || 0).toLocaleString()} delta={display.customersDelta ?? 0} />
         </div>
 
-        {/* Main grid */}
         <div className="reports-grid">
           <section className="panel">
             <div className="panel-top">
               <h3>Revenue Trend</h3>
-              <span className="muted small">{backendMetrics ? 'Using backend metrics' : 'Mock data • Replace with backend later'}</span>
+              <span className="muted small">{backendMetrics ? "Using backend metrics" : "Mock data - replace with backend later"}</span>
             </div>
 
             <div className="spark">
@@ -282,7 +274,7 @@ export default function AdminReports() {
           <section className="panel">
             <div className="panel-top">
               <h3>Recent Activity</h3>
-              <span className="muted small">Orders • Tickets • Auctions</span>
+              <span className="muted small">Orders - Tickets - Auctions</span>
             </div>
 
             <div className="activity">
@@ -298,7 +290,7 @@ export default function AdminReports() {
                     {typeof a.amount === "number" ? (
                       <div className="activity-amt">{money(a.amount)}</div>
                     ) : (
-                      <div className="activity-amt muted">—</div>
+                      <div className="activity-amt muted">-</div>
                     )}
                     <StatusPill status={a.status} />
                   </div>

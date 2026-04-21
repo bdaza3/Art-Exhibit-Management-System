@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import AdminSideBar from "../../components/admin/AdminSideBar"
+import "./AdminDashboard.css"
 import "./AdminArtworks.css"
 
 type Order = {
@@ -81,51 +82,53 @@ export default function AdminOrders() {
 
   const money = (value?: number) => Number(value || 0).toFixed(2)
   const displayDate = (value?: string) => value ? new Date(value).toLocaleString() : "New order"
+  const totalRevenue = filtered.reduce((sum, order) => sum + Number(order.total || order.total_price || 0), 0)
+  const shippedCount = filtered.filter((order) => order.status === "Shipped").length
 
   return (
     <div style={{ display: "flex" }}>
       <AdminSideBar />
 
       <div className="admin-page">
-        <h1 className="admin-title">Manage Orders</h1>
-
-        <div className="list-controls">
-          <input className="search" placeholder="Search customer or item..." value={query} onChange={(e) => setQuery(e.target.value)} />
-          <select value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
-            <option value="">All statuses</option>
-            {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
-          </select>
+        <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <div>
+            <h1 className="admin-title">Orders</h1>
+            <p className="muted">Review purchases, update shipping status, and inspect order details in one place.</p>
+          </div>
         </div>
 
         {loading ? (
           <p className="muted">Loading...</p>
         ) : (
-          <div className="art-grid">
+          <div className="orders-grid">
             {filtered.length === 0 && <p className="muted">No orders found yet. Customer purchases will appear here after checkout.</p>}
             {filtered.map((o) => (
-              <div key={o.id} className="art-card">
-                <div style={{ padding: 12 }}>
-                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div>
-                      <div className="art-title">Order #{o.id}</div>
-                      <div className="art-artist">{o.customer}</div>
-                      <div className="muted tiny">{displayDate(o.created_at)}</div>
-                    </div>
-                    <div style={{ textAlign: "right" }}>
-                      <div className="art-price">${money(o.total)}</div>
-                      <div className="model-badge">{o.status}</div>
-                    </div>
+              <div key={o.id} className="order-card">
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12 }}>
+                  <div>
+                    <div className="art-title">Order #{o.id}</div>
+                    <div className="art-artist">{o.customer}</div>
+                    <div className="muted tiny">{displayDate(o.created_at)}</div>
                   </div>
+                  <div style={{ textAlign: "right" }}>
+                    <div className="art-price">${money(o.total)}</div>
+                    <div className="status-badge">{o.status}</div>
+                  </div>
+                </div>
 
-                  <div className="muted" style={{ marginTop: 10 }}>
-                    {orderItems(o).map((it) => `${it.title} x${it.qty}`).join(", ")}
-                  </div>
+                <div className="detail-list">
+                  {orderItems(o).map((it, index) => (
+                    <div key={`${o.id}-${index}`} className="detail-list-item">
+                      <span>{it.title}</span>
+                      <span className="muted">x{it.qty}</span>
+                    </div>
+                  ))}
+                </div>
 
-                  <div className="card-actions">
-                    <button className="link" onClick={() => setSelected(o)}>View</button>
-                    <button className="link" onClick={() => updateStatus(o.id, o.status === "Shipped" ? "Paid" : "Shipped")}>Toggle Shipped</button>
-                    <button className="link danger" onClick={() => handleDelete(o.id)}>Delete</button>
-                  </div>
+                <div className="card-actions">
+                  <button className="link" onClick={() => setSelected(o)}>View</button>
+                  <button className="link" onClick={() => updateStatus(o.id, o.status === "Shipped" ? "Paid" : "Shipped")}>Toggle Shipped</button>
+                  <button className="link danger" onClick={() => handleDelete(o.id)}>Delete</button>
                 </div>
               </div>
             ))}
@@ -138,18 +141,21 @@ export default function AdminOrders() {
               <div className="modal-header">
                 <div>
                   <h2>Order #{selected.id}</h2>
-                  <p className="muted">{selected.customer} • {displayDate(selected.created_at)}</p>
+                  <p className="muted">{selected.customer} - {displayDate(selected.created_at)}</p>
                 </div>
-                <button className="close-btn" onClick={() => setSelected(null)}>✕</button>
+                <button className="close-btn" onClick={() => setSelected(null)}>x</button>
               </div>
 
               <div className="modal-content">
                 <div className="modal-left">
-                  <div style={{ padding: 10 }}>
+                  <div className="admin-surface" style={{ padding: 14 }}>
                     <strong>Items</strong>
-                    <ul>
+                    <ul className="detail-list" style={{ paddingLeft: 0, marginBottom: 0, listStyle: "none" }}>
                       {orderItems(selected).map((it, i) => (
-                        <li key={i}>{it.title} x {it.qty} - ${money(it.price)}</li>
+                        <li key={i} className="detail-list-item">
+                          <span>{it.title} x {it.qty}</span>
+                          <span>${money(it.price)}</span>
+                        </li>
                       ))}
                     </ul>
                   </div>
@@ -157,9 +163,9 @@ export default function AdminOrders() {
 
                 <div className="modal-right">
                   <div className="detail-row"><span>Total</span><span className="gold">${money(selected.total)}</span></div>
-                  <div className="detail-row"><span>Status</span><span>{selected.status}</span></div>
+                  <div className="detail-row"><span>Status</span><span className="status-badge">{selected.status}</span></div>
                   <div style={{ display: "flex", gap: 10, marginTop: 12 }}>
-                    <button className="primary-btn" onClick={() => { updateStatus(selected.id, "Shipped"); setSelected(null); }}>Mark Shipped</button>
+                    <button className="primary-btn" onClick={() => { updateStatus(selected.id, "Shipped"); setSelected(null) }}>Mark Shipped</button>
                     <button className="secondary-btn" onClick={() => setSelected(null)}>Close</button>
                   </div>
                 </div>

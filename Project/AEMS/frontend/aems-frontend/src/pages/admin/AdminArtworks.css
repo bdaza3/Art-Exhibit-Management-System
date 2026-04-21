@@ -87,6 +87,7 @@
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   width: 100%;
+  gap: 16px;
 }
 
 .form-grid {
@@ -127,7 +128,7 @@
 .two-col > div { flex:1 }
 .row.actions { display:flex; gap:12px; align-items:center }
 
-.list-controls { display:flex; gap:12px; align-items:center; margin-bottom:18px }
+.list-controls { display:flex; gap:12px; align-items:center; margin-bottom:18px; flex-wrap: wrap; }
 .search { flex:1; padding:10px 12px; border-radius:10px; border:1px solid rgba(255,255,255,0.06); background:rgba(0,0,0,0.4); color:white }
 
 .card-actions { display:flex; gap:8px; margin-top:12px }
@@ -304,4 +305,165 @@
   padding: 10px;
   border-radius: 10px;
   cursor: pointer;
+}
+
+.admin-page .admin-title {
+  margin-bottom: 0;
+}
+
+.admin-page .dash-header {
+  margin-bottom: 18px;
+}
+
+.page-intro {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.section-note {
+  color: rgba(255,255,255,0.66);
+  font-size: 13px;
+}
+
+.art-card.compact-card {
+  background: linear-gradient(180deg, rgba(255,255,255,0.04), rgba(255,255,255,0.02));
+}
+
+.art-card.compact-card .art-image {
+  height: 150px;
+}
+
+.orders-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 16px;
+}
+
+.order-card {
+  background: linear-gradient(180deg, rgba(10,10,12,0.96), rgba(6,6,8,0.98));
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 18px;
+  padding: 16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,0.28);
+}
+
+.order-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212,175,55,0.35);
+}
+
+.status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 10px;
+  border-radius: 999px;
+  font-size: 12px;
+  font-weight: 700;
+  background: rgba(212,175,55,0.12);
+  border: 1px solid rgba(212,175,55,0.22);
+  color: #f3d37a;
+  text-transform: capitalize;
+}
+
+.detail-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.detail-list-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.modal-right input,
+.modal-right textarea {
+  width: 100%;
+  padding: 11px 12px;
+  border-radius: 10px;
+  border: 1px solid rgba(212,175,55,0.25);
+  background: rgba(255,255,255,0.03);
+  color: #fff;
+}
+
+.modal-right textarea {
+  min-height: 96px;
+  resize: vertical;
+}
+
+.auction-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 16px;
+}
+
+.auction-card {
+  padding: 16px;
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(10,10,12,0.96), rgba(6,6,8,0.98));
+  border: 1px solid rgba(255,255,255,0.06);
+  box-shadow: 0 10px 26px rgba(0,0,0,0.28);
+}
+
+.auction-card-top,
+.auction-meta-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.auction-meta {
+  margin-top: 12px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.auction-meta-tile {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.auction-meta-label {
+  font-size: 12px;
+  color: rgba(255,255,255,0.62);
+}
+
+.auction-meta-value {
+  margin-top: 4px;
+  font-weight: 700;
+  color: #fff;
+}
+
+.auction-actions-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 14px;
+}
+
+.ghost-btn {
+  background: transparent;
+  border: 1px solid rgba(212,175,55,0.24);
+  color: #fff;
+  padding: 10px 12px;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.ghost-btn:hover {
+  transform: scale(1.03);
+  border-color: rgba(212,175,55,0.42);
 }
