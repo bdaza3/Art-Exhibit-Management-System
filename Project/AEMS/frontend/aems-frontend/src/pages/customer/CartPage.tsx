@@ -1,5 +1,6 @@
-import React, { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import PageTopBar from "../../components/PageTopBar";
 import "./CartPage.css";
 
 type CartItem = {
@@ -106,8 +107,10 @@ export default function CartPage() {
 
   return (
     <div className="cart-page">
+      <PageTopBar title="Cart" />
+
       <div className="cart-header">
-        <h2>Cart</h2>
+        <h2>Your Cart</h2>
         {items.length > 0 && (
           <button className="btn btn-ghost" onClick={clear}>
             Clear cart

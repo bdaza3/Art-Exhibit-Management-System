@@ -39,7 +39,7 @@ export default function AdminSideBar() {
       <ItemButton page="Events" title="Exhibitions" icon={<EventIcon />} router="/admin/events"/>
       <ItemButton page="Orders" title="Orders" icon={<ShoppingCartIcon />} router="/admin/orders"/>
       <ItemButton page="Auctions" title="Auctions" icon={<GavelIcon />} router="/admin/auctions"/>
-      {/*<ItemButton page="Customers" title="Customers" icon={<PeopleIcon />} router="/admin/customers"/>*/}
+      <ItemButton page="Customers" title="Customers" icon={<PeopleIcon />} router="/admin/customers"/>
       <ItemButton page="Reports" title="Reports" icon={<BarChartIcon />} router="/admin/reports"/>
     </Box>
     </Box>

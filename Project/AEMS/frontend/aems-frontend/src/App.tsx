@@ -23,6 +23,7 @@ import UpcomingEventsPage from './pages/UpcomingEventsPage'
 import BuyTicketsPage from './pages/customer/BuyTicketsPage'
 import MakePaymentsPage from './pages/customer/MakePaymentsPage'
 import RegisterPage from './pages/RegisterPage'
+import CustomerAuctionsPage from './pages/customer/CustomerAuctionsPage'
 
 function App() {
 
@@ -228,6 +229,15 @@ export default function RootApp() {
   element={
     <ProtectedRoute role="customer">
       <BuyTicketsPage />
+    </ProtectedRoute>
+  }
+/>
+
+<Route
+  path="/customer/auctions"
+  element={
+    <ProtectedRoute role="customer">
+      <CustomerAuctionsPage />
     </ProtectedRoute>
   }
 />
