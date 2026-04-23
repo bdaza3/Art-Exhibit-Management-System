@@ -139,7 +139,7 @@ export default function ProfilePage() {
 							{editing ? (
 								<input className="profile-input" value={form.first_name} onChange={(e) => setForm({ ...form, first_name: e.target.value })} />
 							) : (
-								<span className="profile-value">{profile.first_name || "—"}</span>
+								<span className="profile-value">{profile.first_name || "N/A"}</span>
 							)}
 						</div>
 
@@ -148,7 +148,7 @@ export default function ProfilePage() {
 							{editing ? (
 								<input className="profile-input" value={form.last_name} onChange={(e) => setForm({ ...form, last_name: e.target.value })} />
 							) : (
-								<span className="profile-value">{profile.last_name || "—"}</span>
+								<span className="profile-value">{profile.last_name || "N/A"}</span>
 							)}
 						</div>
 
@@ -157,7 +157,7 @@ export default function ProfilePage() {
 							{editing ? (
 								<input className="profile-input" type="email" value={form.email} onChange={(e) => setForm({ ...form, email: e.target.value })} />
 							) : (
-								<span className="profile-value">{profile.email || "—"}</span>
+								<span className="profile-value">{profile.email || "N/A"}</span>
 							)}
 						</div>
 					</div>

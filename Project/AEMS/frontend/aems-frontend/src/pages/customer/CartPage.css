@@ -1,36 +1,18 @@
 .cart-page {
-  padding: 24px;
   color: #f5f5f5;
-  background:
-    radial-gradient(ellipse 1000px 500px at 10% 10%, rgba(212,175,55,0.15), transparent 50%),
-    radial-gradient(ellipse 800px 600px at 90% 30%, rgba(139,69,19,0.12), transparent 50%),
-    radial-gradient(ellipse 600px 400px at 50% 85%, rgba(212,175,55,0.08), transparent 45%),
-    radial-gradient(circle 350px at 25% 55%, rgba(178,34,34,0.08), transparent 40%),
-    radial-gradient(circle 280px at 70% 70%, rgba(255,140,0,0.07), transparent 40%),
-    conic-gradient(from 45deg at 60% 20%, rgba(212,175,55,0.05), transparent 12%, rgba(139,69,19,0.04), transparent 25%),
-    linear-gradient(145deg, #0e0a06 0%, #140f08 30%, #0f0c07 60%, #0a0806 100%);
-  min-height: 100vh;
 }
 
 .cart-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-bottom: 16px;
-  
 }
 
 .cart-empty {
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  border-radius: 14px;
   padding: 18px;
-  background: rgba(0, 0, 0, 0.35);
-  
 }
 
 .cart-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: minmax(0, 1fr) 340px;
   gap: 18px;
 }
 
@@ -42,7 +24,7 @@
 
 .cart-item {
   display: grid;
-  grid-template-columns: 84px 1fr 140px 120px 110px;
+  grid-template-columns: 84px minmax(0, 1fr) 140px 120px 110px;
   gap: 12px;
   align-items: center;
   border: 1px solid rgba(212, 175, 55, 0.28);
@@ -90,10 +72,6 @@
 }
 
 .cart-summary {
-  border: 1px solid rgba(212, 175, 55, 0.35);
-  border-radius: 14px;
-  padding: 14px;
-  background: rgba(0, 0, 0, 0.35);
   height: fit-content;
 }
 
@@ -125,15 +103,12 @@
 .btn-primary {
   width: 100%;
   margin-top: 12px;
-
   background: #d4af37 !important;
-  color: #111;          
-
+  color: #111;
   font-weight: 700;
   border: none;
   border-radius: 14px;
   padding: 12px 16px;
-
   cursor: pointer;
   transition: all 0.2s ease;
 }
@@ -159,4 +134,28 @@
 .tiny {
   font-size: 12px;
   margin-top: 10px;
+}
+
+@media (max-width: 1100px) {
+  .cart-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .cart-item {
+    grid-template-columns: 84px minmax(0, 1fr);
+  }
+
+  .qty,
+  .line-total {
+    justify-content: flex-start;
+    text-align: left;
+  }
+}
+
+@media (max-width: 520px) {
+  .cart-item {
+    grid-template-columns: 1fr;
+  }
 }

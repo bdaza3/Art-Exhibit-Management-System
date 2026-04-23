@@ -62,19 +62,6 @@ function App() {
 return (
     <div className="hero">
       
-      {/* NAVBAR */}
-      <nav className="nav">
-        <div className="logo">AEMS</div>
-        <div className="nav-links">
-          <a>
-            <Link to="/">Home</Link>
-          </a>
-          <a>Exhibitions</a>
-          <a>Artists</a>
-          <a>Contact</a>
-        </div>
-      
-      </nav>
       <div className="nav-border"></div>
       {/* CENTER CONTENT */}
       <div className="hero-content">

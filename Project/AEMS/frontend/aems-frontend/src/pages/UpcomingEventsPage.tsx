@@ -2,10 +2,11 @@ import { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import "./UpcomingEventsPage.css";
 import PageTopBar from "../components/PageTopBar";
+import SideBar from "../components/customer/SideBar";
 import DefaultAicImage from "../assets/Art/art_institute_chicago.jpeg";
+import "./customer/CustomerSubpage.css";
 
 const ARCHIVE_EVENTS_API = "http://127.0.0.1:8000/api/events/archive/";
-
 
 type EventItem = {
   id: string;
@@ -13,17 +14,17 @@ type EventItem = {
   title: string;
   museum: string;
   city: string;
-  startDate: string; // YYYY-MM-DD
-  endDate: string;   // YYYY-MM-DD
-  time: string;      // "10:00 AM – 6:00 PM"
+  startDate: string;
+  endDate: string;
+  time: string;
   description: string;
   highlights: string[];
-  image?: string; // optional bg image
+  image?: string;
   ticketFrom: number;
 };
 
 function formatDate(d: string) {
-  const dt = new Date(d + "T00:00:00");
+  const dt = new Date(`${d}T00:00:00`);
   return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
@@ -76,202 +77,185 @@ export default function UpcomingEventsPage() {
           throw new Error("No events available");
         }
 
-        if (!cancelled) {
-          setEvents(deduped);
-        }
+        if (!cancelled) setEvents(deduped);
       } catch {
         if (!cancelled) {
           setError("Could not load live events right now.");
           setEvents([]);
         }
       } finally {
-        if (!cancelled) {
-          setLoading(false);
-        }
+        if (!cancelled) setLoading(false);
       }
     }
 
-    loadEvents();
+    void loadEvents();
     return () => {
       cancelled = true;
     };
   }, []);
 
   const museums = useMemo(() => {
-    const unique = Array.from(new Set(events.map((e) => e.museum)));
+    const unique = Array.from(new Set(events.map((event) => event.museum)));
     return ["All", ...unique];
   }, [events]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    let list = events.filter((e) => {
-      const matchesMuseum = museum === "All" || e.museum === museum;
+    let list = events.filter((event) => {
+      const matchesMuseum = museum === "All" || event.museum === museum;
       if (!matchesMuseum) return false;
-
-      // Keep all museum-matching events visible until the user enters a search term.
       if (!q) return true;
 
       return (
-        e.title.toLowerCase().includes(q) ||
-        e.museum.toLowerCase().includes(q) ||
-        e.city.toLowerCase().includes(q)
+        event.title.toLowerCase().includes(q) ||
+        event.museum.toLowerCase().includes(q) ||
+        event.city.toLowerCase().includes(q)
       );
     });
 
     list = [...list].sort((a, b) =>
-      sort === "soonest"
-        ? a.startDate.localeCompare(b.startDate)
-        : b.startDate.localeCompare(a.startDate)
+      sort === "soonest" ? a.startDate.localeCompare(b.startDate) : b.startDate.localeCompare(a.startDate)
     );
 
     return list;
   }, [events, query, museum, sort]);
 
-  function goBuyTickets(ev: EventItem) {
-    // pass selection to tickets page
-    navigate("/customer/tickets", { state: { eventId: ev.id } });
+  function goBuyTickets(event: EventItem) {
+    navigate("/customer/tickets", { state: { eventId: event.id } });
   }
 
   return (
-    <div className="events-page">
-        <PageTopBar title="Upcoming Events" />
-      <div className="events-hero">
-        <div>
-          <h2>Upcoming Events</h2>
-          <p className="muted">Browse exhibitions and reserve tickets. Click any event for details.</p>
-        </div>
+    <div className="customer-subpage-shell">
+      <SideBar />
 
-        <div className="events-controls">
-          <input
-            className="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search title, museum, city…"
-          />
-          <select value={museum} onChange={(e) => setMuseum(e.target.value)}>
-            {museums.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-          <select value={sort} onChange={(e) => setSort(e.target.value as any)}>
-            <option value="soonest">Sort: Soonest</option>
-            <option value="latest">Sort: Latest</option>
-          </select>
-        </div>
-      </div>
+      <main className="events-page customer-subpage-main">
 
-      <div className="events-grid">
+        <section className="events-hero customer-subpage-hero">
+          <div>
+            <h1>Upcoming Events</h1>
+            <p className="muted">Browse exhibitions and reserve tickets. Click any event for details.</p>
+          </div>
+        </section>
+
+          <div className="events-controls">
+            <input
+              className="search customer-field"
+              value={query}
+              onChange={(e) => setQuery(e.target.value)}
+              placeholder="Search title, museum, city..."
+            />
+            <select className="customer-select" value={museum} onChange={(e) => setMuseum(e.target.value)}>
+              {museums.map((item) => (
+                <option key={item} value={item}>{item}</option>
+              ))}
+            </select>
+            <select className="customer-select" value={sort} onChange={(e) => setSort(e.target.value as "soonest" | "latest")}>
+              <option value="soonest">Sort: Soonest</option>
+              <option value="latest">Sort: Latest</option>
+            </select>
+          </div>
+          
+        <div className="events-grid">
           {loading && <p className="muted">Loading events...</p>}
           {!loading && error && <p className="muted">{error}</p>}
-          {!loading && !error && filtered.length === 0 && (
-            <p className="muted">No events found for your current filters.</p>
-          )}
-          {filtered.map((ev) => (
-    <button
-      key={ev.id}
-      className="event-card"
-      type="button"
-      onClick={() => setSelected(ev)}
-    >
-      <div
-        className="event-cover"
-        style={{
-          backgroundImage: ev.image ? `url(${ev.image})` : "none",
-          backgroundSize: ev.source === "serp" ? "contain" : "cover",
-          backgroundRepeat: "no-repeat",
-        }}
-      >
+          {!loading && !error && filtered.length === 0 && <p className="muted">No events found for your current filters.</p>}
 
-        <span className="event-status">SHOWING</span>
-        <span className="event-price">From ${ev.ticketFrom}</span>
-      </div>
-
-      <div className="event-body">
-        <div className="event-title">{ev.title}</div>
-
-        <div className="event-meta">
-          <span className="pill">{ev.museum}</span>
-          <span className="dot">•</span>
-          <span className="muted">{formatDate(ev.startDate)}</span>
-          <span className="dot">•</span>
-          <span className="muted">{ev.city}</span>
-        </div>
-
-        <div className="event-desc muted">
-          {ev.description}
-        </div>
-      </div>
-    </button>
-  ))}
-      </div>
-
-      {selected && (
-        <div className="modal-backdrop" onMouseDown={() => setSelected(null)}>
-          <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
-            <div className="modal-top">
-              <div>
-                <div className="modal-title">{selected.title}</div>
-                <div className="muted">{selected.museum} • {selected.city}</div>
-              </div>
-              <button className="icon-btn" onClick={() => setSelected(null)} aria-label="Close">
-                ✕
-              </button>
-            </div>
-
-            <div className="modal-content">
+          {filtered.map((event) => (
+            <button key={event.id} className="event-card" type="button" onClick={() => setSelected(event)}>
               <div
-                className="modal-image"
+                className="event-cover"
                 style={{
-                  backgroundImage: selected.image ? `url(${selected.image})` : undefined,
-                  backgroundSize: selected.source === "serp" ? "contain" : "cover",
+                  backgroundImage: event.image ? `url(${event.image})` : "none",
+                  backgroundSize: event.source === "serp" ? "contain" : "cover",
                   backgroundRepeat: "no-repeat",
                 }}
-              />
+              >
+                <span className="event-status">SHOWING</span>
+                <span className="event-price">From ${event.ticketFrom}</span>
+              </div>
 
-              <div className="modal-details">
-                <div className="detail-row">
-                  <span className="label">Dates</span>
-                  <span className="value">
-                    {formatDate(selected.startDate)} – {formatDate(selected.endDate)}
-                  </span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Hours</span>
-                  <span className="value">{selected.time}</span>
-                </div>
-                <div className="detail-row">
-                  <span className="label">Tickets from</span>
-                  <span className="value gold">${selected.ticketFrom}</span>
+              <div className="event-body">
+                <div className="event-title">{event.title}</div>
+
+                <div className="event-meta">
+                  <span className="pill">{event.museum}</span>
+                  <span className="dot">•</span>
+                  <span className="muted">{formatDate(event.startDate)}</span>
+                  <span className="dot">•</span>
+                  <span className="muted">{event.city}</span>
                 </div>
 
-                <div className="block">
-                  <div className="block-title">About</div>
-                  <div className="block-text muted">{selected.description}</div>
-                </div>
+                <div className="event-desc muted">{event.description}</div>
+              </div>
+            </button>
+          ))}
+        </div>
 
-                <div className="block">
-                  <div className="block-title">Highlights</div>
-                  <ul className="list">
-                    {selected.highlights.map((h) => (
-                      <li key={h} className="muted">{h}</li>
-                    ))}
-                  </ul>
+        {selected && (
+          <div className="modal-backdrop" onMouseDown={() => setSelected(null)}>
+            <div className="modal" onMouseDown={(e) => e.stopPropagation()}>
+              <div className="modal-top">
+                <div>
+                  <div className="modal-title">{selected.title}</div>
+                  <div className="muted">{selected.museum} • {selected.city}</div>
                 </div>
+                <button className="icon-btn" onClick={() => setSelected(null)} aria-label="Close">
+                  x
+                </button>
+              </div>
 
-                <div className="modal-actions">
-                  <button className="btn btn-primary" onClick={() => goBuyTickets(selected)}>
-                    Buy tickets
-                  </button>
-                  <button className="btn btn-ghost" onClick={() => setSelected(null)}>
-                    Close
-                  </button>
+              <div className="modal-content">
+                <div
+                  className="modal-image"
+                  style={{
+                    backgroundImage: selected.image ? `url(${selected.image})` : undefined,
+                    backgroundSize: selected.source === "serp" ? "contain" : "cover",
+                    backgroundRepeat: "no-repeat",
+                  }}
+                />
+
+                <div className="modal-details">
+                  <div className="detail-row">
+                    <span className="label">Dates</span>
+                    <span className="value">{formatDate(selected.startDate)} - {formatDate(selected.endDate)}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Hours</span>
+                    <span className="value">{selected.time}</span>
+                  </div>
+                  <div className="detail-row">
+                    <span className="label">Tickets from</span>
+                    <span className="value gold">${selected.ticketFrom}</span>
+                  </div>
+
+                  <div className="block">
+                    <div className="block-title">About</div>
+                    <div className="block-text muted">{selected.description}</div>
+                  </div>
+
+                  <div className="block">
+                    <div className="block-title">Highlights</div>
+                    <ul className="list">
+                      {selected.highlights.map((highlight) => (
+                        <li key={highlight} className="muted">{highlight}</li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="modal-actions">
+                    <button className="btn btn-primary" onClick={() => goBuyTickets(selected)}>
+                      Buy tickets
+                    </button>
+                    <button className="btn btn-ghost" onClick={() => setSelected(null)}>
+                      Close
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
+        )}
+      </main>
     </div>
   );
 }

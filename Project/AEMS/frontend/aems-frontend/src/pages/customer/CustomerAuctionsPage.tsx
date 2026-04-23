@@ -143,7 +143,6 @@ export default function CustomerAuctionsPage() {
       <SideBar />
 
       <main className="customer-auctions-page">
-        <PageTopBar title="Live Auctions" />
 
         <section className="customer-auctions-hero">
           <div>

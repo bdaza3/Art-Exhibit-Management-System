@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import "./SettingsPage.css";
+import PageTopBar from "../components/PageTopBar";
 
 type Settings = {
   displayName: string;
@@ -99,8 +100,10 @@ useEffect(() => {
 
   return (
     <div className="settings-page">
+
+        <PageTopBar title="Settings" />
+
       <div className="settings-header">
-        <h2>Settings</h2>
         {saved && <span className="pill">Saved</span>}
       </div>
 

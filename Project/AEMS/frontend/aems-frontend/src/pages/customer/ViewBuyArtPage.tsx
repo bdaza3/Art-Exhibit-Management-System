@@ -123,8 +123,6 @@ export default function ViewBuyArtPage() {
       <SideBar />
 
       <div className="art-page">
-        <PageTopBar title="View / Buy Arts" />
-
   
         <div className="art-hero">
           <h2>Explore Art</h2>
