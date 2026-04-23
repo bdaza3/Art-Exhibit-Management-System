@@ -111,8 +111,8 @@ export default function AdminCustomers() {
       <div className="admin-page">
         <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 className="admin-title">Customers</h1>
-            <p className="muted">View customer purchase activity from completed orders.</p>
+            <h2 style={{ margin: 0 }}>Customers</h2>
+            <div className="muted">View customer purchase activity from completed orders.</div>
           </div>
         </div>
 
@@ -129,6 +129,12 @@ export default function AdminCustomers() {
           <p className="muted">Loading customers...</p>
         ) : (
           <>
+            {filteredCustomers.length === 0 ? (
+              <div className="pay-empty customer-empty">
+                <h3>No customers found</h3>
+                <p className="muted">No orders have been placed yet. Customers will appear here after checkout.</p>
+              </div>
+            ) : (
             <div className="auction-meta" style={{ marginBottom: 18 }}>
               <div className="auction-meta-tile">
                 <div className="auction-meta-label">Customers</div>
@@ -151,11 +157,9 @@ export default function AdminCustomers() {
                 <div className="auction-meta-value">${money(totalRevenue)}</div>
               </div>
             </div>
+            )}
 
             <div className="orders-grid">
-              {filteredCustomers.length === 0 && (
-                <p className="muted">No customer orders found yet. Customers will appear here after checkout.</p>
-              )}
 
               {filteredCustomers.map((customer) => (
                 <div key={customer.name} className="order-card">

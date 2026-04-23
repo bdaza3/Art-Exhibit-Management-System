@@ -10,6 +10,7 @@ const API_ARTWORKS = "http://127.0.0.1:8000/api/artworks/"
 export default function AdminAuctions() {
   const [artworks, setArtworks] = useState<any[]>([])
   const [auctions, setAuctions] = useState<any[]>([])
+  const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
   const [form, setForm] = useState({ artwork_id: "", starting_bid: 0, min_increment: 1, start_time: "", end_time: "" })
 
   useEffect(() => {
@@ -23,9 +24,6 @@ export default function AdminAuctions() {
       .then((d) => setAuctions(d))
       .catch(() => {})
   }, [])
-
-  const activeCount = auctions.filter((auction: any) => auction.status === "active").length
-  const scheduledCount = auctions.filter((auction: any) => auction.status === "scheduled").length
 
   const handleCreate = async (e: any) => {
     e.preventDefault()
@@ -49,6 +47,7 @@ export default function AdminAuctions() {
       const created = await res.json()
       setAuctions((p) => [created, ...p])
       setForm({ artwork_id: "", starting_bid: 0, min_increment: 1, start_time: "", end_time: "" })
+      setIsCreateModalOpen(false)
     } catch (err) {
       console.error(err)
       alert("Failed to create auction")
@@ -79,56 +78,63 @@ export default function AdminAuctions() {
       <div className="admin-page">
         <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 className="admin-title">Auctions</h1>
-            <p className="muted">Launch, monitor, and control live bidding with the same admin dashboard structure used elsewhere.</p>
+            <h2 style={{ margin: 0 }}>Auctions</h2>
+            <div className="muted">Launch, monitor, and control live bidding.</div>
           </div>
+          <button className="dash-action-btn" type="button" onClick={() => setIsCreateModalOpen(true)}>
+            Create Auction
+          </button>
         </div>
 
-        <div className="page-intro">
-
-          <div className="admin-surface">
-            <div className="admin-surface-header">
-              <div>
-                <h2 className="admin-surface-title">Create Auction</h2>
-                <div className="section-note">Select an artwork, define bidding rules, then schedule the start and end time.</div>
+        {isCreateModalOpen && (
+          <div className="auction-modal-overlay" onClick={() => setIsCreateModalOpen(false)}>
+            <div className="auction-modal" onClick={(e) => e.stopPropagation()}>
+              <div className="admin-surface-header">
+                <div>
+                  <h2 className="admin-surface-title">Create Auction</h2>
+                  <div className="section-note">Select an artwork, define bidding rules, then schedule the start and end time.</div>
+                </div>
+                <button className="ghost-btn" type="button" onClick={() => setIsCreateModalOpen(false)}>
+                  Close
+                </button>
               </div>
+
+              <form onSubmit={handleCreate} className="auction-form">
+                <div className="auction-field">
+                  <label>Artwork</label>
+                  <select required className="admin-input" value={form.artwork_id} onChange={(e) => setForm({ ...form, artwork_id: e.target.value })}>
+                    <option value="">Select artwork</option>
+                    {artworks.map((a: any) => <option key={a.id} value={a.id}>{a.title} - {a.artist}</option>)}
+                  </select>
+                </div>
+
+                <div className="auction-field">
+                  <label>Starting bid (USD)</label>
+                  <input className="admin-input" type="number" step="0.01" placeholder="Starting bid" value={form.starting_bid} onChange={(e) => setForm({ ...form, starting_bid: Number(e.target.value) })} />
+                </div>
+
+                <div className="auction-field">
+                  <label>Min increment (USD)</label>
+                  <input className="admin-input" type="number" step="0.01" placeholder="Min increment" value={form.min_increment} onChange={(e) => setForm({ ...form, min_increment: Number(e.target.value) })} />
+                </div>
+
+                <div className="auction-field">
+                  <label>Start time</label>
+                  <input className="admin-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
+                </div>
+
+                <div className="auction-field">
+                  <label>End time</label>
+                  <input className="admin-input" type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
+                </div>
+
+                <div className="auction-field auction-actions">
+                  <button type="submit" className="dash-action-btn">Create Auction</button>
+                </div>
+              </form>
             </div>
-
-            <form onSubmit={handleCreate} className="auction-form">
-              <div className="auction-field">
-                <label>Artwork</label>
-                <select required className="admin-input" value={form.artwork_id} onChange={(e) => setForm({ ...form, artwork_id: e.target.value })}>
-                  <option value="">Select artwork</option>
-                  {artworks.map((a: any) => <option key={a.id} value={a.id}>{a.title} - {a.artist}</option>)}
-                </select>
-              </div>
-
-              <div className="auction-field">
-                <label>Starting bid (USD)</label>
-                <input className="admin-input" type="number" step="0.01" placeholder="Starting bid" value={form.starting_bid} onChange={(e) => setForm({ ...form, starting_bid: Number(e.target.value) })} />
-              </div>
-
-              <div className="auction-field">
-                <label>Min increment (USD)</label>
-                <input className="admin-input" type="number" step="0.01" placeholder="Min increment" value={form.min_increment} onChange={(e) => setForm({ ...form, min_increment: Number(e.target.value) })} />
-              </div>
-
-              <div className="auction-field">
-                <label>Start time</label>
-                <input className="admin-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
-              </div>
-
-              <div className="auction-field">
-                <label>End time</label>
-                <input className="admin-input" type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
-              </div>
-
-              <div className="auction-field auction-actions">
-                <button type="submit" className="dash-action-btn">Create Auction</button>
-              </div>
-            </form>
           </div>
-        </div>
+        )}
 
         <div className="admin-surface">
           <div className="admin-surface-header">

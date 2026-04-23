@@ -36,10 +36,35 @@
 
 .auction-actions { align-self: flex-end; }
 
+.auction-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 1200;
+}
+
+.auction-modal {
+  width: min(920px, 100%);
+  max-height: 90vh;
+  overflow-y: auto;
+  background: linear-gradient(180deg, rgba(31, 33, 47, 0.98), rgba(17, 19, 30, 0.98));
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 14px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+}
+
 /* Prevent right-side cutoff inside dashboard layout */
 .dashboard-content { overflow: visible; }
 
 @media (max-width: 900px) {
   .auction-field { min-width: 100%; }
   .auction-actions { width: 100%; display:flex; justify-content:flex-end }
+  .auction-modal {
+    padding: 14px;
+  }
 }

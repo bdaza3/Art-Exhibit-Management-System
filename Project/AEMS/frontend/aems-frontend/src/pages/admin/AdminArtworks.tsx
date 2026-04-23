@@ -284,8 +284,8 @@ export default function AdminArtworks() {
       <div className="admin-page">
         <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 className="admin-title">Artworks</h1>
-            <p className="muted">Manage the gallery catalog, media, and 3D-ready listings with the same dashboard look and spacing.</p>
+            <h2 style={{ margin: 0 }}>Artworks</h2>
+            <div className="muted">Manage your gallery catalog, media, and 3D-ready listings.</div>
           </div>
         </div>
 

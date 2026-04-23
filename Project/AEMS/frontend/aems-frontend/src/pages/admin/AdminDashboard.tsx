@@ -124,8 +124,8 @@ export default function AdminDashboard() {
       <div className="admin-page">
         <div className="dash-header dashboard-header-row">
           <div>
-            <h1 className="admin-title">Welcome back, {username}.</h1>
-            <p className="muted">A cleaner view of the last 30 days across orders, tickets, exhibitions, and auctions.</p>
+            <h2 className="admin-title">Welcome back, {username}.</h2>
+            <p className="muted">Overview of your art collection across orders, tickets, exhibitions, and auctions.</p>
           </div>
 
           <div className="dashboard-actions">

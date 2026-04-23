@@ -92,8 +92,8 @@ export default function AdminOrders() {
       <div className="admin-page">
         <div className="dash-header" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
           <div>
-            <h1 className="admin-title">Orders</h1>
-            <p className="muted">Review purchases, update shipping status, and inspect order details in one place.</p>
+            <h2 style={{ margin: 0 }}>Orders</h2>
+            <div className="muted">Review purchases, update shipping status, and inspect order details in one place.</div>
           </div>
         </div>
 
