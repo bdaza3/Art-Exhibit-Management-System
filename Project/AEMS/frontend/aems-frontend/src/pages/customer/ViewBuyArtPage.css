@@ -5,14 +5,7 @@
   flex: 1;
   margin-left: 150px;
 
-  background:
-    radial-gradient(ellipse 900px 550px at 10% 20%, rgba(180,0,120,0.12), transparent 50%),
-    radial-gradient(ellipse 800px 500px at 85% 15%, rgba(212,175,55,0.14), transparent 50%),
-    radial-gradient(ellipse 700px 450px at 50% 75%, rgba(25,25,112,0.12), transparent 50%),
-    radial-gradient(circle 320px at 30% 60%, rgba(128,0,128,0.08), transparent 40%),
-    radial-gradient(circle 260px at 75% 50%, rgba(212,175,55,0.06), transparent 38%),
-    conic-gradient(from 300deg at 55% 30%, rgba(180,0,120,0.04), transparent 10%, rgba(25,25,112,0.04), transparent 22%),
-    linear-gradient(165deg, #0c0614 0%, #100a18 30%, #0d081a 60%, #08040e 100%);
+  background: #0c0d11;
 }
 
 .art-hero {
@@ -33,7 +26,7 @@
   padding: 12px 28px;
   border: 1.5px solid rgba(212, 175, 55, 0.5);
   border-radius: 30px;
-  background: rgba(212, 175, 55, 0.08);
+  background: #14171d;
   color: #d4af37;
   font-size: 15px;
   font-weight: 600;
@@ -44,9 +37,8 @@
 }
 
 .scroll-down-btn:hover {
-  background: rgba(212, 175, 55, 0.18);
+  background: #1a1d24;
   border-color: #d4af37;
-  box-shadow: 0 0 18px rgba(212, 175, 55, 0.3);
   transform: translateY(2px);
 }
 

@@ -287,7 +287,7 @@ export default function AdminExhibitions() {
                 { (ex as any).image ? (
                   <div style={{ width: '100%', height: 160, background: `url(${(ex as any).image}) center/cover no-repeat` }} />
                 ) : (
-                  <div style={{ width: '100%', height: 160, background: 'linear-gradient(90deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01))', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.45)' }}>
+                  <div style={{ width: '100%', height: 160, background: '#14171d', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'rgba(255,255,255,0.45)' }}>
                     No image
                   </div>
                 )}

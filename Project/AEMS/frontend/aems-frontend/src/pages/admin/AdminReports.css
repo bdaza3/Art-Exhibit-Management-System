@@ -20,8 +20,7 @@
   padding: 10px 12px;
   border-radius: 14px;
   border: 1px solid rgba(212, 175, 55, 0.28);
-  background: rgba(255, 255, 255, 0.04);
-  backdrop-filter: blur(10px);
+  background: #14171d;
 }
 
 .pill-label {
@@ -67,8 +66,7 @@
   padding: 16px;
   border-radius: 18px;
   border: 1px solid rgba(212, 175, 55, 0.22);
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.08), rgba(0, 0, 0, 0.85));
-  backdrop-filter: blur(10px);
+  background: #14171d;
 }
 
 .kpi-title {
@@ -110,8 +108,7 @@
 .panel {
   border-radius: 18px;
   border: 1px solid rgba(212, 175, 55, 0.18);
-  background: rgba(0, 0, 0, 0.35);
-  backdrop-filter: blur(10px);
+  background: #101217;
   padding: 16px;
   overflow: hidden;
 }
@@ -142,10 +139,8 @@
 
 .trend-chart {
   border-radius: 18px;
-  background:
-    radial-gradient(circle at top, rgba(212, 175, 55, 0.14), transparent 36%),
-    linear-gradient(180deg, rgba(8, 8, 11, 0.96), rgba(13, 13, 17, 0.98));
-  border: 1px solid rgba(255, 255, 255, 0.05);
+  background: #0f1116;
+  border: 1px solid rgba(255, 255, 255, 0.06);
   padding: 16px;
 }
 

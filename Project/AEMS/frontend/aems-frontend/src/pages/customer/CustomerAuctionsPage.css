@@ -4,11 +4,7 @@
   flex: 1;
   padding: 24px;
   color: #f5f5f5;
-  background:
-    radial-gradient(ellipse 900px 520px at 12% 12%, rgba(212, 175, 55, 0.13), transparent 50%),
-    radial-gradient(ellipse 800px 460px at 88% 24%, rgba(32, 112, 140, 0.14), transparent 48%),
-    radial-gradient(ellipse 720px 420px at 45% 82%, rgba(105, 45, 135, 0.12), transparent 54%),
-    linear-gradient(150deg, #08080e 0%, #0f0a15 42%, #070914 100%);
+  background: #0c0d11;
 }
 
 .customer-auctions-hero {
@@ -18,9 +14,9 @@
   gap: 18px;
   margin: 18px 0 20px;
   padding: 28px;
-  border: 1px solid rgba(212, 175, 55, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: 18px;
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.10), rgba(0, 0, 0, 0.55));
+  background: #14171d;
 }
 
 .customer-auctions-hero h1 {
@@ -90,9 +86,9 @@
 .customer-auction-card {
   overflow: hidden;
   border-radius: 18px;
-  border: 1px solid rgba(212, 175, 55, 0.22);
-  background: rgba(4, 4, 8, 0.72);
-  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.34);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #14171d;
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.22);
 }
 
 .customer-auction-image {
