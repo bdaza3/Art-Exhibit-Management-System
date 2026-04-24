@@ -24,7 +24,6 @@ export default function AdminArtworks() {
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [modelFile, setModelFile] = useState<File | null>(null);
-  const [priceInput, setPriceInput] = useState("");
   const [editPriceInput, setEditPriceInput] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
@@ -111,7 +110,7 @@ export default function AdminArtworks() {
   try {
    
     // prepare payload and upload files if provided
-    const payload = { ...form, price: Number(priceInput) } as any;
+    const payload = { ...form, price: Number(form.price) } as any;
 
     if (imageFile) {
       try {
@@ -184,7 +183,6 @@ export default function AdminArtworks() {
     description: "",
     model_3d: "",
   });
-  setPriceInput("");
 };
 
   const handleEditChange = (e: any) => {
