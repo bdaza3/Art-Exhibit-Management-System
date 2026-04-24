@@ -337,7 +337,10 @@ export default function AdminExhibitions() {
             <TextField label="Date" name="date" type="date" InputLabelProps={{ shrink: true }} value={formData.date} onChange={handleChange} fullWidth sx={darkInputSx} />
             <TextField label="Description" name="description" value={formData.description} onChange={handleChange} fullWidth multiline rows={3} sx={darkInputSx} />
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              <input type="file" accept="image/*" onChange={handleFile} />
+              <Box sx={{ display: 'flex', flexDirection: 'column', gap: 0.5 }}>
+                <Typography sx={{ fontSize: 12, color: 'rgba(255,255,255,0.72)' }}>Exhibition Thumbnail</Typography>
+                <input type="file" accept="image/*" onChange={handleFile} />
+              </Box>
               {imagePreview ? <img src={imagePreview} style={{ width: 96, height: 64, objectFit: 'cover', borderRadius: 6, border: '1px solid rgba(255,255,255,0.06)' }} /> : null}
             </Box>
           </DialogContent>

@@ -159,7 +159,7 @@ export default function AdminDashboard() {
                 <div className="admin-surface-header">
                   <div>
                     <h2 className="admin-surface-title">Sales Overview</h2>
-                    <p className="muted small-copy">Real revenue totals grouped across the last 30 days.</p>
+                    <p className="muted small-copy">Revenue totals displayed across the last 30 days.</p>
                   </div>
                   <Link to="/admin/reports" className="dashboard-inline-link">Open reports</Link>
                 </div>
@@ -284,7 +284,6 @@ function SummaryCard({
     <div className={`dashboard-stat-card ${accent === "gold" ? "is-gold" : ""}`}>
       <div className="dashboard-stat-label">{title}</div>
       <div className="dashboard-stat-value">{value}</div>
-      <div className={`dashboard-stat-delta ${delta >= 0 ? "up" : "down"}`}>{formatDelta(delta)} vs previous period</div>
     </div>
   );
 }
