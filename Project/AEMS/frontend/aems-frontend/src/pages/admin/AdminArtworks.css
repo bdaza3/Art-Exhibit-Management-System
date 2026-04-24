@@ -294,6 +294,18 @@
   cursor: pointer;
 }
 
+.edit-modal-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.edit-modal-actions .primary-btn,
+.edit-modal-actions .secondary-btn {
+  flex: 1;
+  width: 100%;
+  margin-top: 0;
+}
+
 .admin-page .admin-title {
   margin-bottom: 0;
 }

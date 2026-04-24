@@ -324,7 +324,7 @@ export default function CustomerDashboard() {
                   "url(https://images.unsplash.com/photo-1547891654-e66ed7ebb968?q=80&w=2070)",
             }}
            >
-            <h3>View / Buy Arts ▼</h3>
+            <h3>View & Buy Arts</h3>
             <p>Explore and purchase artworks</p>
           </div>
 

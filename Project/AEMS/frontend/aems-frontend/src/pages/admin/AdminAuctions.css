@@ -1,31 +1,65 @@
 .auction-form {
   display: flex;
-  gap: 12px;
-  margin-bottom: 12px;
-  align-items: center;
-  flex-wrap: wrap;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 18px;
+}
+
+.auction-form-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
 }
 
 .auction-field {
   display: flex;
   flex-direction: column;
   gap: 6px;
-  min-width: 160px;
+}
+
+.auction-field-wide {
+  width: 100%;
 }
 
 .auction-field label {
   font-size: 13px;
-  color: rgba(255,255,255,0.75);
+  color: rgba(255,255,255,0.78);
+  letter-spacing: 0.02em;
+}
+
+.dash-action-btn {
+  background: #d4af37;
+  border: none;
+  padding: 12px 18px;
+  border-radius: 12px;
+  color: #111;
+  font-weight: 600;
+  cursor: pointer;
+  box-shadow: 0 8px 22px rgba(212,175,55,0.18);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.dash-action-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 12px 28px rgba(212,175,55,0.28);
 }
 
 .admin-input {
-  background: rgba(0,0,0,0.55);
+  width: 100%;
+  background: rgba(255,255,255,0.04);
   color: #fff;
-  border: 1px solid rgba(255,255,255,0.06);
-  padding: 8px 10px;
-  border-radius: 8px;
-  min-width: 160px;
+  border: 1px solid rgba(255,255,255,0.08);
+  padding: 11px 12px;
+  border-radius: 12px;
   box-sizing: border-box;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+
+.admin-input:focus {
+  outline: none;
+  border-color: rgba(212,175,55,0.75);
+  box-shadow: 0 0 0 3px rgba(212,175,55,0.12);
+  background: rgba(255,255,255,0.06);
 }
 
 /* Ensure select dropdown items are readable on dark background */
@@ -34,7 +68,14 @@
   color: #fff;
 }
 
-.auction-actions { align-self: flex-end; }
+.auction-actions {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.auction-form-actions {
+  padding-top: 4px;
+}
 
 .auction-modal-overlay {
   position: fixed;
@@ -48,23 +89,47 @@
 }
 
 .auction-modal {
-  width: min(920px, 100%);
-  max-height: 90vh;
+  width: min(1040px, 100%);
+  max-height: 92vh;
   overflow-y: auto;
-  background: #171a22;
-  border: 1px solid rgba(255, 255, 255, 0.12);
-  border-radius: 14px;
-  padding: 20px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+  background: linear-gradient(180deg, #1b1f29 0%, #141821 100%);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 24px 70px rgba(0, 0, 0, 0.55);
+}
+
+.auction-modal .admin-surface-header {
+  padding-bottom: 16px;
+  margin-bottom: 18px;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.auction-modal .section-note {
+  max-width: 640px;
+}
+
+.auction-modal .ghost-btn {
+  min-width: 96px;
 }
 
 /* Prevent right-side cutoff inside dashboard layout */
 .dashboard-content { overflow: visible; }
 
 @media (max-width: 900px) {
-  .auction-field { min-width: 100%; }
-  .auction-actions { width: 100%; display:flex; justify-content:flex-end }
+  .auction-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .auction-actions {
+    width: 100%;
+  }
+
+  .auction-actions .dash-action-btn {
+    width: 100%;
+  }
+
   .auction-modal {
-    padding: 14px;
+    padding: 18px;
   }
 }

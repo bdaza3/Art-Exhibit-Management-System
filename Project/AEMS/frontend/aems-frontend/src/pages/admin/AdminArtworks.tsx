@@ -21,13 +21,11 @@ export default function AdminArtworks() {
   const [artworks, setArtworks] = useState<Artwork[]>([]);
   const [loading, setLoading] = useState(true);
   const [selected, setSelected] = useState<Artwork | null>(null);
-
-
-  const [query, setQuery] = useState("");
-  const [categoryFilter, setCategoryFilter] = useState("");
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [modelFile, setModelFile] = useState<File | null>(null);
+  const [priceInput, setPriceInput] = useState("");
+  const [editPriceInput, setEditPriceInput] = useState("");
 
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState<Artwork | null>(null);
@@ -113,7 +111,7 @@ export default function AdminArtworks() {
   try {
    
     // prepare payload and upload files if provided
-    const payload = { ...form } as any;
+    const payload = { ...form, price: Number(priceInput) } as any;
 
     if (imageFile) {
       try {
@@ -186,6 +184,7 @@ export default function AdminArtworks() {
     description: "",
     model_3d: "",
   });
+  setPriceInput("");
 };
 
   const handleEditChange = (e: any) => {
@@ -227,10 +226,12 @@ export default function AdminArtworks() {
           return;
         }
       }
+      const payload = { ...editForm, price: Number(editPriceInput) };
+
       const res = await fetch(`${API_BASE}${editForm.id}/`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(editForm),
+        body: JSON.stringify(payload),
       });
 
       const updated = await res.json();
@@ -262,20 +263,6 @@ export default function AdminArtworks() {
     }
     setSelected(null);
   };
-
-  const categories = Array.from(new Set(artworks.map((a) => a.category).filter(Boolean)));
-  const modeledCount = artworks.filter((art) => art.model_3d).length;
-
-  const filtered = artworks.filter((a) => {
-    const q = query.trim().toLowerCase();
-    if (categoryFilter && a.category !== categoryFilter) return false;
-    if (!q) return true;
-    return (
-      a.title.toLowerCase().includes(q) ||
-      a.artist.toLowerCase().includes(q) ||
-      (a.description || "").toLowerCase().includes(q)
-    );
-  });
 
   return (
     <div style={{ display: "flex" }}>
@@ -368,7 +355,7 @@ export default function AdminArtworks() {
           <p className="muted">Loading...</p>
         ) : (
           <div className="art-grid">
-            {filtered.map((art) => (
+            {artworks.map((art) => (
               <div key={art.id || art.title} className="art-card compact-card">
                 {art.image && <img src={art.image} className="art-image" alt={art.title} />}
                 <div className="art-body">
@@ -379,7 +366,7 @@ export default function AdminArtworks() {
 
                   <div className="card-actions">
                     <button className="link" onClick={() => { setSelected(art); setIsEditing(false); setShow3D(false); }}>View</button>
-                    <button className="link" onClick={() => { setSelected(art); setIsEditing(true); setEditForm(art); setShow3D(false); }}>Edit</button>
+                    <button className="link" onClick={() => { setSelected(art); setIsEditing(true); setEditForm(art); setEditPriceInput(String(art.price ?? "")); setShow3D(false); }}>Edit</button>
                     <button className="link danger" onClick={() => handleDelete(art.id)}>Delete</button>
                   </div>
                 </div>
@@ -453,6 +440,7 @@ export default function AdminArtworks() {
                         onClick={() => {
                           setIsEditing(true);
                           setEditForm(selected);
+                          setEditPriceInput(String(selected.price ?? ""));
                         }}
                       >
                         Edit Artwork
@@ -462,12 +450,12 @@ export default function AdminArtworks() {
                     <>
                       <input name="title" value={editForm?.title || ""} onChange={handleEditChange} />
                       <input name="artist" value={editForm?.artist || ""} onChange={handleEditChange} />
-                      <input name="price" type="number" value={editForm?.price || 0} onChange={handleEditChange} />
+                      <input name="price" type="text" inputMode="decimal" value={editPriceInput} onChange={(e) => setEditPriceInput(e.target.value)} />
                       <input name="category" value={editForm?.category || ""} onChange={handleEditChange} />
                       <input name="image" value={editForm?.image || ""} onChange={handleEditChange} />
                       <textarea name="description" value={editForm?.description || ""} onChange={handleEditChange} />
 
-                      <div style={{ display: "flex", gap: "10px" }}>
+                      <div className="edit-modal-actions">
                         <button className="primary-btn" onClick={handleUpdate}>
                           Save
                         </button>

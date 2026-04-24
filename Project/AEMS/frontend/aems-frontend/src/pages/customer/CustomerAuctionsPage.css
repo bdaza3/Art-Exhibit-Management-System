@@ -44,8 +44,10 @@
 
 .auction-toolbar {
   display: flex;
+  align-items: center;
   gap: 12px;
-  flex-wrap: wrap;
+  width: 50%;
+  margin-right: auto;
   margin-bottom: 18px;
 }
 
@@ -61,7 +63,13 @@
 }
 
 .auction-search {
-  min-width: min(360px, 100%);
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.auction-toolbar select {
+  flex: 0 0 180px;
+  width: 180px;
 }
 
 .auction-toolbar select option {
@@ -173,11 +181,27 @@
 }
 
 .bid-panel {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  align-items: center;
+  display: flex;
+  flex-direction: column;
   gap: 10px;
   margin-bottom: 12px;
+}
+
+.bid-panel-row {
+  display: flex;
+  gap: 10px;
+  align-items: end;
+}
+
+.bid-panel-row input {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.bid-panel-row button {
+  flex: 0 0 136px;
+  width: 136px;
+  white-space: nowrap;
 }
 
 .bid-panel label {
@@ -186,6 +210,31 @@
   gap: 6px;
   color: rgba(255, 255, 255, 0.78);
   font-size: 13px;
+}
+
+.anonymous-bid-toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.14);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.anonymous-bid-toggle input {
+  margin-top: 3px;
+}
+
+.anonymous-bid-toggle span {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.anonymous-bid-toggle small {
+  color: rgba(255, 255, 255, 0.62);
 }
 
 .bid-panel button:disabled,
@@ -223,6 +272,19 @@
     margin-left: 0;
   }
 
+  .auction-toolbar {
+    width: 100%;
+    margin-right: 0;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .auction-toolbar select,
+  .auction-search {
+    width: 100%;
+    flex: 1 1 auto;
+  }
+
   .customer-auctions-hero,
   .customer-auction-heading,
   .bid-panel {
@@ -234,5 +296,15 @@
   .customer-auction-grid,
   .auction-stat-grid {
     grid-template-columns: 1fr;
+  }
+
+  .bid-panel-row {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .bid-panel-row button {
+    width: 100%;
+    flex: 1 1 auto;
   }
 }

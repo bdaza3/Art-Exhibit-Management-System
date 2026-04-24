@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import "./BuyTicketsPage.css";
 import SideBar from "../../components/customer/SideBar";
 import "./CustomerSubpage.css";
+import DefaultAicImage from "../../assets/Art/art_institute_chicago.jpeg";
 
 type TicketType = "General" | "Student" | "VIP";
 
@@ -14,6 +15,7 @@ type TicketEvent = {
   startDate: string;
   endDate: string;
   basePrice: number;
+  image?: string;
 };
 
 type CartItem = {
@@ -26,14 +28,8 @@ type CartItem = {
 };
 
 const CART_KEY = "aems_cart";
-
-const EVENTS: TicketEvent[] = [
-  { id: "ev-201", title: "Impressionist Light: Modern Echoes", museum: "The Art Institute of Chicago", city: "Chicago, IL", startDate: "2026-03-01", endDate: "2026-05-15", basePrice: 28 },
-  { id: "ev-202", title: "Urban Noir: Shadows of the City", museum: "Museum of Contemporary Art", city: "Chicago, IL", startDate: "2026-03-12", endDate: "2026-06-20", basePrice: 22 },
-  { id: "ev-203", title: "Still Water, Golden Air", museum: "National Gallery of Victoria", city: "Melbourne, AU", startDate: "2026-04-05", endDate: "2026-07-01", basePrice: 30 },
-  { id: "ev-204", title: "Renaissance Reimagined: Digital Masters", museum: "The Louvre Digital Wing", city: "Paris, France", startDate: "2026-05-10", endDate: "2026-08-30", basePrice: 35 },
-  { id: "ev-205", title: "Sculpted Silence: Modern Minimalism", museum: "Museum of Modern Art (MoMA)", city: "New York, NY", startDate: "2026-06-01", endDate: "2026-09-15", basePrice: 26 },
-];
+const ARCHIVE_EVENTS_API = "http://127.0.0.1:8000/api/events/archive/";
+const EXHIBITIONS_API = "http://127.0.0.1:8000/api/exhibitions/";
 
 function getCart(): CartItem[] {
   try {
@@ -59,36 +55,127 @@ function formatDate(d: string) {
   return dt.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
 }
 
+function normalizeDate(value: unknown) {
+  const raw = String(value ?? "").slice(0, 10);
+  return /^\d{4}-\d{2}-\d{2}$/.test(raw) ? raw : new Date().toISOString().slice(0, 10);
+}
+
 export default function BuyTicketsPage() {
   const nav = useNavigate();
   const location = useLocation() as { state?: { eventId?: string } };
 
   const preselectId = location?.state?.eventId;
-  const hasPreselectedEvent = !!preselectId && EVENTS.some((event) => event.id === preselectId);
-
-  const [eventId, setEventId] = useState(hasPreselectedEvent ? preselectId! : EVENTS[0].id);
+  const [events, setEvents] = useState<TicketEvent[]>([]);
+  const [eventId, setEventId] = useState("");
   const [type, setType] = useState<TicketType>("General");
   const [qty, setQty] = useState(2);
   const [toast, setToast] = useState("");
 
   useEffect(() => {
-    if (hasPreselectedEvent) setEventId(preselectId!);
-  }, [hasPreselectedEvent, preselectId]);
+    let cancelled = false;
 
-  const event = useMemo(() => EVENTS.find((item) => item.id === eventId)!, [eventId]);
-  const unit = useMemo(() => priceFor(type, event.basePrice), [event.basePrice, type]);
+    async function loadEvents() {
+      const [archiveResult, exhibitionsResult] = await Promise.allSettled([
+        fetch(ARCHIVE_EVENTS_API),
+        fetch(EXHIBITIONS_API),
+      ]);
+
+      const archivePayload =
+        archiveResult.status === "fulfilled" && archiveResult.value.ok
+          ? await archiveResult.value.json()
+          : null;
+      const exhibitionsPayload =
+        exhibitionsResult.status === "fulfilled" && exhibitionsResult.value.ok
+          ? await exhibitionsResult.value.json()
+          : null;
+
+      const archiveRows = Array.isArray(archivePayload?.data) ? archivePayload.data : [];
+      const exhibitionRows = Array.isArray(exhibitionsPayload) ? exhibitionsPayload : [];
+
+      const archiveEvents: TicketEvent[] = archiveRows.map((row: any, idx: number) => ({
+        id: String(row.id ?? `${row.source ?? "evt"}-${idx}`),
+        title: String(row.title ?? "Untitled Event"),
+        museum: String(row.museum ?? "Chicago Art Events"),
+        city: String(row.city ?? "Chicago, IL"),
+        startDate: normalizeDate(row.startDate),
+        endDate: normalizeDate(row.endDate ?? row.startDate),
+        basePrice: Number(row.ticketFrom ?? 20),
+        image: row.image ? String(row.image) : row.thumbnail ? String(row.thumbnail) : DefaultAicImage,
+      }));
+
+      const adminEvents: TicketEvent[] = exhibitionRows.map((row: any, idx: number) => ({
+        id: String(row.id ?? `admin-${idx}`),
+        title: String(row.title ?? "Untitled Exhibition"),
+        museum: String(row.venue ?? "Museum Exhibition"),
+        city: String(row.location ?? "Location TBA"),
+        startDate: normalizeDate(row.date),
+        endDate: normalizeDate(row.date),
+        basePrice: Number(row.ticketFrom ?? 20),
+        image: row.image ? String(row.image) : DefaultAicImage,
+      }));
+
+      const mergedEvents = [...adminEvents, ...archiveEvents]
+        .filter((event, index, list) => {
+          return (
+            index ===
+            list.findIndex(
+              (candidate) =>
+                candidate.title.toLowerCase() === event.title.toLowerCase() &&
+                candidate.museum.toLowerCase() === event.museum.toLowerCase() &&
+                candidate.startDate === event.startDate
+            )
+          );
+        })
+        .sort((a, b) => a.startDate.localeCompare(b.startDate));
+
+      if (cancelled) return;
+
+      setEvents(mergedEvents);
+
+      if (mergedEvents.length === 0) {
+        setEventId("");
+        return;
+      }
+
+      const hasPreselectedEvent = !!preselectId && mergedEvents.some((event) => event.id === preselectId);
+      setEventId(hasPreselectedEvent ? preselectId! : mergedEvents[0].id);
+    }
+
+    void loadEvents();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [preselectId]);
+
+  const event = useMemo(() => events.find((item) => item.id === eventId) ?? null, [eventId, events]);
+  const unit = useMemo(() => (event ? priceFor(type, event.basePrice) : 0), [event, type]);
   const subtotal = useMemo(() => unit * qty, [unit, qty]);
   const tax = useMemo(() => subtotal * 0.1025, [subtotal]);
   const total = useMemo(() => subtotal + tax, [subtotal, tax]);
 
   function addTicketsToCart() {
+    if (!event) return;
+
     const cart = getCart();
     const itemId = `ticket-${event.id}-${type.toLowerCase()}`;
     const title = `${event.title} - ${type} Ticket`;
     const existing = cart.find((item) => item.id === itemId);
 
-    if (existing) existing.qty += qty;
-    else cart.push({ id: itemId, title, price: unit, qty });
+    if (existing) {
+      existing.qty += qty;
+      if (!existing.image && event.image) {
+        existing.image = event.image;
+      }
+    } else {
+      cart.push({
+        id: itemId,
+        title,
+        price: unit,
+        qty,
+        image: event.image,
+      });
+    }
 
     setCart(cart);
     setToast("Tickets added to cart");
@@ -100,7 +187,6 @@ export default function BuyTicketsPage() {
       <SideBar />
 
       <main className="tickets-page customer-subpage-main">
-
         <section className="tickets-hero customer-subpage-hero">
           <div>
             <h1>Buy Tickets</h1>
@@ -114,8 +200,13 @@ export default function BuyTicketsPage() {
 
             <label>
               Exhibition
-              <select className="customer-select" value={eventId} onChange={(e) => setEventId(e.target.value)}>
-                {EVENTS.map((item) => (
+              <select
+                className="customer-select"
+                value={eventId}
+                onChange={(e) => setEventId(e.target.value)}
+                disabled={events.length === 0}
+              >
+                {events.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.title} - {item.museum}
                   </option>
@@ -124,7 +215,9 @@ export default function BuyTicketsPage() {
             </label>
 
             <div className="mini muted">
-              {event.museum} • {event.city} • {formatDate(event.startDate)} - {formatDate(event.endDate)}
+              {event
+                ? `${event.museum} • ${event.city} • ${formatDate(event.startDate)} - ${formatDate(event.endDate)}`
+                : "Loading exhibitions..."}
             </div>
 
             <div className="row2">
@@ -182,15 +275,13 @@ export default function BuyTicketsPage() {
               <span>${total.toFixed(2)}</span>
             </div>
 
-            <button className="btn btn-primary" onClick={addTicketsToCart}>
+            <button className="btn btn-primary" onClick={addTicketsToCart} disabled={!event}>
               Add tickets to cart
             </button>
 
             <button className="btn btn-ghost" onClick={() => nav("/customer/cart")}>
               Go to cart
             </button>
-
-            <p className="muted tiny">Payments can later route to Stripe in your "Make Payments" flow.</p>
           </aside>
         </div>
 

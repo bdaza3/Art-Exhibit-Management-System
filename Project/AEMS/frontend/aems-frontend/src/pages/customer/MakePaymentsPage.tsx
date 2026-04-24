@@ -225,7 +225,6 @@ export default function MakePaymentsPage() {
 
                   {paymentError && <p className="payment-error">{paymentError}</p>}
 
-                  <p className="muted tiny">This is a UI placeholder. Later connect to Stripe.</p>
                 </div>
               )}
 

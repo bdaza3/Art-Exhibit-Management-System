@@ -266,7 +266,7 @@ export default function AdminExhibitions() {
           </div>
 
           <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
-            <Button variant="outlined" onClick={() => refresh()} sx={{ textTransform: "none", color: "#000", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>Refresh</Button>
+            <Button variant="outlined" onClick={() => refresh()} sx={{ textTransform: "none", color: "#fff", transition: 'transform 0.2s', borderColor: "#d4af37", ":hover": { transform: 'scale(1.05)'} }}>Refresh</Button>
             <Button variant="contained" onClick={openCreate} sx={{ bgcolor: "#d4af37", color: "#000", textTransform: "none", transition: 'transform 0.2s', ":hover": { transform: 'scale(1.05)'} }}>New Exhibition</Button>
           </div>
         </div>
@@ -327,7 +327,7 @@ export default function AdminExhibitions() {
           onClose={closeDialogs}
           fullWidth
           maxWidth="sm"
-          PaperProps={{ sx: { background: "rgba(255,255,255,0.02)", color: "#fff", border: "1px solid rgba(255,255,255,0.03)", borderRadius: 2 } }}
+          PaperProps={{ sx: { background: "#171a22", color: "#fff", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 2 } }}
         >
           <DialogTitle sx={{ color: "#fff" }}>Add Exhibition</DialogTitle>
           <DialogContent sx={{ display: "flex", flexDirection: "column", gap: 2, mt: 1 }}>

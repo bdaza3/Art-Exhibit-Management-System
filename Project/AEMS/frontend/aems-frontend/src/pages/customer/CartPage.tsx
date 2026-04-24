@@ -165,7 +165,6 @@ export default function CartPage() {
                 Checkout
               </button>
 
-              <p className="muted tiny">Payments can later route to your "Make Payments" flow / Stripe.</p>
             </aside>
           </div>
         )}

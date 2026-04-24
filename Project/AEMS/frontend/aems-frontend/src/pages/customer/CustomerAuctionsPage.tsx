@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useState } from "react";
-import PageTopBar from "../../components/PageTopBar";
 import SideBar from "../../components/customer/SideBar";
 import "./CustomerAuctionsPage.css";
 
@@ -225,22 +224,28 @@ export default function CustomerAuctionsPage() {
                     </div>
 
                     <div className="bid-panel">
-                      <input
-                        type="number"
-                        min={minimumBid}
-                        step="0.01"
-                        value={bidInputs[auction.id] || ""}
-                        onChange={(event) =>
-                          setBidInputs((currentInputs) => ({
-                            ...currentInputs,
-                            [auction.id]: event.target.value,
-                          }))
-                        }
-                        placeholder={`Minimum ${currency(minimumBid)}`}
-                        disabled={!canBid}
-                      />
+                      <div className="bid-panel-row">
+                        <input
+                          type="number"
+                          min={minimumBid}
+                          step="0.01"
+                          value={bidInputs[auction.id] || ""}
+                          onChange={(event) =>
+                            setBidInputs((currentInputs) => ({
+                              ...currentInputs,
+                              [auction.id]: event.target.value,
+                            }))
+                          }
+                          placeholder={`Minimum ${currency(minimumBid)}`}
+                          disabled={!canBid}
+                        />
 
-                      <label>
+                        <button disabled={!canBid} onClick={() => void placeBid(auction)}>
+                          Place Bid
+                        </button>
+                      </div>
+
+                      <label className="anonymous-bid-toggle">
                         <input
                           type="checkbox"
                           checked={Boolean(anonymousInputs[auction.id])}
@@ -252,12 +257,11 @@ export default function CustomerAuctionsPage() {
                           }
                           disabled={!canBid}
                         />
-                        Anonymous
+                        <span>
+                          Anonymous bid
+                          <small>Hide your username from the public bid history.</small>
+                        </span>
                       </label>
-
-                      <button disabled={!canBid} onClick={() => void placeBid(auction)}>
-                        Place Bid
-                      </button>
                     </div>
 
                     {!canBid && (

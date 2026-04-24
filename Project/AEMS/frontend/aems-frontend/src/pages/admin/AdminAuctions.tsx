@@ -11,7 +11,7 @@ export default function AdminAuctions() {
   const [artworks, setArtworks] = useState<any[]>([])
   const [auctions, setAuctions] = useState<any[]>([])
   const [isCreateModalOpen, setIsCreateModalOpen] = useState(false)
-  const [form, setForm] = useState({ artwork_id: "", starting_bid: 0, min_increment: 1, start_time: "", end_time: "" })
+  const [form, setForm] = useState({ artwork_id: "", starting_bid: "", min_increment: "", start_time: "", end_time: "" })
 
   useEffect(() => {
     fetch(API_ARTWORKS)
@@ -46,7 +46,7 @@ export default function AdminAuctions() {
       if (!res.ok) throw new Error("Failed to create")
       const created = await res.json()
       setAuctions((p) => [created, ...p])
-      setForm({ artwork_id: "", starting_bid: 0, min_increment: 1, start_time: "", end_time: "" })
+      setForm({ artwork_id: "", starting_bid: "", min_increment: "", start_time: "", end_time: "" })
       setIsCreateModalOpen(false)
     } catch (err) {
       console.error(err)
@@ -100,7 +100,7 @@ export default function AdminAuctions() {
               </div>
 
               <form onSubmit={handleCreate} className="auction-form">
-                <div className="auction-field">
+                <div className="auction-field auction-field-wide">
                   <label>Artwork</label>
                   <select required className="admin-input" value={form.artwork_id} onChange={(e) => setForm({ ...form, artwork_id: e.target.value })}>
                     <option value="">Select artwork</option>
@@ -108,27 +108,29 @@ export default function AdminAuctions() {
                   </select>
                 </div>
 
-                <div className="auction-field">
-                  <label>Starting bid (USD)</label>
-                  <input className="admin-input" type="number" step="0.01" placeholder="Starting bid" value={form.starting_bid} onChange={(e) => setForm({ ...form, starting_bid: Number(e.target.value) })} />
+                <div className="auction-form-grid">
+                  <div className="auction-field">
+                    <label>Starting bid (USD)</label>
+                    <input className="admin-input" type="text" inputMode="decimal" placeholder="Starting bid" value={form.starting_bid} onChange={(e) => setForm({ ...form, starting_bid: e.target.value })} />
+                  </div>
+
+                  <div className="auction-field">
+                    <label>Min increment (USD)</label>
+                    <input className="admin-input" type="text" inputMode="decimal" placeholder="Min increment" value={form.min_increment} onChange={(e) => setForm({ ...form, min_increment: e.target.value })} />
+                  </div>
+
+                  <div className="auction-field">
+                    <label>Start time</label>
+                    <input className="admin-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
+                  </div>
+
+                  <div className="auction-field">
+                    <label>End time</label>
+                    <input className="admin-input" type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
+                  </div>
                 </div>
 
-                <div className="auction-field">
-                  <label>Min increment (USD)</label>
-                  <input className="admin-input" type="number" step="0.01" placeholder="Min increment" value={form.min_increment} onChange={(e) => setForm({ ...form, min_increment: Number(e.target.value) })} />
-                </div>
-
-                <div className="auction-field">
-                  <label>Start time</label>
-                  <input className="admin-input" type="datetime-local" value={form.start_time} onChange={(e) => setForm({ ...form, start_time: e.target.value })} />
-                </div>
-
-                <div className="auction-field">
-                  <label>End time</label>
-                  <input className="admin-input" type="datetime-local" value={form.end_time} onChange={(e) => setForm({ ...form, end_time: e.target.value })} />
-                </div>
-
-                <div className="auction-field auction-actions">
+                <div className="auction-actions auction-form-actions">
                   <button type="submit" className="dash-action-btn">Create Auction</button>
                 </div>
               </form>

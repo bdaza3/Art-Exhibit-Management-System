@@ -7,10 +7,11 @@ import DefaultAicImage from "../assets/Art/art_institute_chicago.jpeg";
 import "./customer/CustomerSubpage.css";
 
 const ARCHIVE_EVENTS_API = "http://127.0.0.1:8000/api/events/archive/";
+const EXHIBITIONS_API = "http://127.0.0.1:8000/api/exhibitions/";
 
 type EventItem = {
   id: string;
-  source: "aic" | "serp";
+  source: "aic" | "serp" | "admin";
   title: string;
   museum: string;
   city: string;
@@ -51,12 +52,24 @@ export default function UpcomingEventsPage() {
       setError(null);
 
       try {
-        const res = await fetch(ARCHIVE_EVENTS_API);
-        if (!res.ok) throw new Error("Failed to load archived events");
-        const payload = await res.json();
-        const rows = Array.isArray(payload?.data) ? payload.data : [];
+        const [archiveResult, exhibitionsResult] = await Promise.allSettled([
+          fetch(ARCHIVE_EVENTS_API),
+          fetch(EXHIBITIONS_API),
+        ]);
 
-        const deduped: EventItem[] = rows.map((row: any, idx: number) => ({
+        const archivePayload =
+          archiveResult.status === "fulfilled" && archiveResult.value.ok
+            ? await archiveResult.value.json()
+            : null;
+        const exhibitionsPayload =
+          exhibitionsResult.status === "fulfilled" && exhibitionsResult.value.ok
+            ? await exhibitionsResult.value.json()
+            : null;
+
+        const archiveRows = Array.isArray(archivePayload?.data) ? archivePayload.data : [];
+        const exhibitionRows = Array.isArray(exhibitionsPayload) ? exhibitionsPayload : [];
+
+        const archiveEvents: EventItem[] = archiveRows.map((row: any, idx: number) => ({
           id: String(row.id ?? `${row.source ?? "evt"}-${idx}`),
           source: row.source === "serp" ? "serp" : "aic",
           title: String(row.title ?? "Untitled Event"),
@@ -71,7 +84,37 @@ export default function UpcomingEventsPage() {
           ticketFrom: Number(row.ticketFrom ?? 20),
         }));
 
-        deduped.sort((a, b) => a.startDate.localeCompare(b.startDate));
+        const adminEvents: EventItem[] = exhibitionRows.map((row: any, idx: number) => ({
+          id: String(row.id ?? `admin-${idx}`),
+          source: "admin",
+          title: String(row.title ?? "Untitled Exhibition"),
+          museum: String(row.venue ?? "Museum Exhibition"),
+          city: String(row.location ?? "Location TBA"),
+          startDate: normalizeDate(row.date),
+          endDate: normalizeDate(row.date),
+          time: "Museum hours vary",
+          description: String(row.description ?? "No description available."),
+          highlights: [
+            `Hosted at ${String(row.venue ?? "the museum")}`,
+            `Location: ${String(row.location ?? "TBA")}`,
+          ],
+          image: row.image ? String(row.image) : DefaultAicImage,
+          ticketFrom: Number(row.ticketFrom ?? 20),
+        }));
+
+        const deduped: EventItem[] = [...adminEvents, ...archiveEvents]
+          .filter((event, index, list) => {
+            return (
+              index ===
+              list.findIndex(
+                (candidate) =>
+                  candidate.title.toLowerCase() === event.title.toLowerCase() &&
+                  candidate.museum.toLowerCase() === event.museum.toLowerCase() &&
+                  candidate.startDate === event.startDate
+              )
+            );
+          })
+          .sort((a, b) => a.startDate.localeCompare(b.startDate));
 
         if (deduped.length === 0) {
           throw new Error("No events available");
