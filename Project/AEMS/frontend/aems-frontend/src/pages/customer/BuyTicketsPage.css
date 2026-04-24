@@ -39,10 +39,16 @@
   outline: none;
 }
 
+.tickets-card select option {
+  background: #17131c;
+  color: #fff;
+}
+
 .row2 {
   display: grid;
   grid-template-columns: 1fr 160px;
   gap: 12px;
+  margin-right: 20px 0;
 }
 
 .muted {

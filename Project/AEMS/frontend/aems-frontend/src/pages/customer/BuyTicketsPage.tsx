@@ -1,7 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./BuyTicketsPage.css";
-import PageTopBar from "../../components/PageTopBar";
 import SideBar from "../../components/customer/SideBar";
 import "./CustomerSubpage.css";
 
@@ -115,7 +114,7 @@ export default function BuyTicketsPage() {
 
             <label>
               Exhibition
-              <select value={eventId} onChange={(e) => setEventId(e.target.value)}>
+              <select className="customer-select" value={eventId} onChange={(e) => setEventId(e.target.value)}>
                 {EVENTS.map((item) => (
                   <option key={item.id} value={item.id}>
                     {item.title} - {item.museum}
@@ -131,7 +130,7 @@ export default function BuyTicketsPage() {
             <div className="row2">
               <label>
                 Ticket type
-                <select value={type} onChange={(e) => setType(e.target.value as TicketType)}>
+                <select className="customer-select" value={type} onChange={(e) => setType(e.target.value as TicketType)}>
                   <option value="General">General</option>
                   <option value="Student">Student</option>
                   <option value="VIP">VIP</option>

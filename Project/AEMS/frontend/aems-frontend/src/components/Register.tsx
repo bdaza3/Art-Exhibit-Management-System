@@ -101,12 +101,13 @@ export default function Register() {
           onChange={(e) => setConfirmPassword(e.target.value)}
         />
 
-        <button onClick={() => handleRegister("customer")}>CREATE ACCOUNT</button>
-        {isDevMode && (
+        <button onClick={() => handleRegister("customer")}>Create Account</button>
+        
+        {/*{isDevMode && (
           <button onClick={() => handleRegister("admin")} style={{ marginTop: 10 }}>
             CREATE ADMIN ACCOUNT (DEV)
           </button>
-        )}
+        )}*/}
 
         <p style={{ marginTop: 20, color: "rgba(255,255,255,0.7)" }}>
           Already have an account?{" "}

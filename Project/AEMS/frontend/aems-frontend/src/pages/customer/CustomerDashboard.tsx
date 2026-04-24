@@ -7,9 +7,6 @@ import Header from "../../components/Header"
 import ArtViewer3D from "../../components/customer/3DArtworkViewer"
 import { addToCart, formatMoney } from "../../components/artData"
 import type { Artwork } from "../../components/artData"
-import PersonIcon from "@mui/icons-material/Person"
-import { ItemButton } from "../../components/customer/ItemButton"
-import { useLocation } from "react-router-dom"
 
 const API_BASE = "http://127.0.0.1:8000/api/artworks"
 
@@ -71,8 +68,6 @@ function mapDbArtworkToStoreArtwork(item: any): Artwork {
 export default function CustomerDashboard() {
   const navigate = useNavigate()
   const username = localStorage.getItem("username")
-  const location = useLocation()
-  const activePath = location.pathname
   const parallaxRef = useRef<HTMLDivElement>(null)
   const homeRef = useRef<HTMLDivElement>(null)
   const artRef = useRef<HTMLDivElement>(null)
@@ -109,11 +104,6 @@ export default function CustomerDashboard() {
     observer.observe(el)
     return () => observer.disconnect()
   }, [])
-
-  const logout = () => {
-    localStorage.clear()
-    navigate("/")
-  }
 
   const [show3DTest, setShow3DTest] = useState(false)
   const TEST_MODEL = "/models/low-poly_tesla_cybertruck.glb"
@@ -309,11 +299,13 @@ export default function CustomerDashboard() {
 
       <div className="dashboard-content">
 
-        <Header title=""/>
-
         {/* HERO HEADER */}
         <div ref={homeRef} className="dash-header">
-          <h2>Welcome back, {username}.</h2>
+          <div>
+            <h2>Welcome back, {username}.</h2>
+            <p className="muted">Jump into your gallery actions, account settings, and checkout tools.</p>
+          </div>
+          <Header title=""/>
         </div>
 
         {/* CARDS */}

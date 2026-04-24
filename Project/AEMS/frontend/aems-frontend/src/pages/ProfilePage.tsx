@@ -1,36 +1,30 @@
 import { useEffect, useState } from "react";
 import "./ProfilePage.css";
-import { Link } from "react-router-dom";
 import SideBar from "../components/customer/SideBar";
 
 const API_BASE = "http://localhost:8000/api/auth";
+const ORDERS_API = "http://127.0.0.1:8000/api/orders/";
 
-const mockTransactions = [
-	{
-		id: 1,
-		artwork: "Golden Horizon",
-		artist: "Amira K.",
-		buyer: "Elena Rossi",
-		date: "Jan 14, 2026",
-		price: "$3,200",
-	},
-	{
-		id: 2,
-		artwork: "Silent Gallery",
-		artist: "Marcus Lee",
-		buyer: "Noah Patel",
-		date: "Dec 02, 2025",
-		price: "$1,850",
-	},
-	{
-		id: 3,
-		artwork: "Velvet Night",
-		artist: "Sofia Marin",
-		buyer: "Aya Tanaka",
-		date: "Nov 19, 2025",
-		price: "$4,600",
-	},
-];
+type OrderHistoryItem = {
+	id: number;
+	artwork_title?: string;
+	user_name?: string;
+	created_at?: string;
+	total_price?: number;
+	total?: number;
+	status?: string;
+};
+
+function formatMoney(value: number) {
+	return value.toLocaleString("en-US", { style: "currency", currency: "USD" });
+}
+
+function formatDate(value?: string) {
+	if (!value) return "Unknown date";
+	const date = new Date(value);
+	if (Number.isNaN(date.getTime())) return "Unknown date";
+	return date.toLocaleDateString("en-US", { month: "short", day: "2-digit", year: "numeric" });
+}
 
 export default function ProfilePage() {
 	const [profile, setProfile] = useState({
@@ -40,6 +34,9 @@ export default function ProfilePage() {
 		last_name: "",
 		role: "",
 	});
+	const [transactions, setTransactions] = useState<OrderHistoryItem[]>([]);
+	const [txLoading, setTxLoading] = useState(true);
+	const [txError, setTxError] = useState("");
 	const [editing, setEditing] = useState(false);
 	const [form, setForm] = useState(profile);
 	const [error, setError] = useState("");
@@ -54,6 +51,30 @@ export default function ProfilePage() {
 			.then((data) => {
 				setProfile(data);
 				setForm(data);
+
+				const currentUsername = data?.username || localStorage.getItem("username") || "";
+				setTxLoading(true);
+				setTxError("");
+				return fetch(ORDERS_API, { credentials: "include" })
+					.then((res) => {
+						if (!res.ok) throw new Error("Could not load transactions");
+						return res.json();
+					})
+					.then((orders) => {
+						const list = Array.isArray(orders) ? orders : [];
+						const filtered = list
+							.filter((item: OrderHistoryItem) => !currentUsername || item.user_name === currentUsername)
+							.sort((a: OrderHistoryItem, b: OrderHistoryItem) => {
+								const aTime = new Date(a.created_at || 0).getTime();
+								const bTime = new Date(b.created_at || 0).getTime();
+								return bTime - aTime;
+							})
+							.slice(0, 8);
+
+						setTransactions(filtered);
+					})
+					.catch(() => setTxError("Could not load recent transactions"))
+					.finally(() => setTxLoading(false));
 			})
 			.catch(() => setError("Could not load profile"));
 	}, []);
@@ -177,23 +198,32 @@ export default function ProfilePage() {
 				<div className="transactions-section">
 					<h3 className="transactions-title">Recent Gallery Transactions</h3>
 					<p className="transactions-subtitle">
-						A curated record of artworks acquired by fellow collectors.
+						Your latest completed purchases from transaction history.
 					</p>
 
 					<div className="transactions-list">
-						{mockTransactions.map((tx) => (
-							<div key={tx.id} className="transaction-item">
-								<div className="transaction-main">
-									<p className="transaction-artwork">{tx.artwork}</p>
-									<p className="transaction-artist">by {tx.artist}</p>
+						{txLoading && <p className="transactions-subtitle">Loading transactions...</p>}
+						{!txLoading && txError && <p className="transactions-subtitle">{txError}</p>}
+						{!txLoading && !txError && transactions.length === 0 && (
+							<p className="transactions-subtitle">No transactions yet.</p>
+						)}
+
+						{!txLoading && !txError && transactions.map((tx) => {
+							const total = Number(tx.total_price ?? tx.total ?? 0);
+							return (
+								<div key={tx.id} className="transaction-item">
+									<div className="transaction-main">
+										<p className="transaction-artwork">{tx.artwork_title || "Untitled purchase"}</p>
+										<p className="transaction-artist">Status: {tx.status || "Paid"}</p>
+									</div>
+									<div className="transaction-meta">
+										<p className="transaction-buyer">Buyer: {tx.user_name || profile.username || "Unknown"}</p>
+										<p className="transaction-date">{formatDate(tx.created_at)}</p>
+										<p className="transaction-price">{formatMoney(total)}</p>
+									</div>
 								</div>
-								<div className="transaction-meta">
-									<p className="transaction-buyer">Buyer: {tx.buyer}</p>
-									<p className="transaction-date">{tx.date}</p>
-									<p className="transaction-price">{tx.price}</p>
-								</div>
-							</div>
-						))}
+							);
+						})}
 					</div>
 				</div>
 			</div>

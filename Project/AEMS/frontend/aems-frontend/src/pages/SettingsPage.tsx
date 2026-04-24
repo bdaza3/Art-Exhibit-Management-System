@@ -157,7 +157,7 @@ useEffect(() => {
         </div>
       </div>
 
-      <div className="settings-card danger-zone">
+      {/*<div className="settings-card danger-zone">
         <h3>Danger zone</h3>
         <button
           className="btn btn-ghost danger"
@@ -166,6 +166,7 @@ useEffect(() => {
           Log out everywhere (placeholder)
         </button>
       </div>
+      */}
       <div className="settings-card">
   <h3>Appearance</h3>
 
