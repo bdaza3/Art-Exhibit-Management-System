@@ -11,16 +11,36 @@ https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from a local .env file in the backend folder (optional).
+# This file is ignored by git (see Project/AEMS/.gitignore) so it is safe to store
+# local secrets there for development. Do NOT commit real secrets to the repo.
+_env_path = BASE_DIR / ".env"
+if _env_path.exists():
+    for raw_line in _env_path.read_text(encoding="utf-8").splitlines():
+        line = raw_line.strip()
+        if not line or line.startswith("#") or "=" not in line:
+            continue
+        key, value = line.split("=", 1)
+        key = key.strip()
+        value = value.strip().strip('"').strip("'")
+        if key and key not in os.environ:
+            os.environ[key] = value
 
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/6.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-c#pv(=6*+$nzuv6+q@%br6)t3((q&pxb7xp1c(c*(3vqa0erbv'
+SECRET_KEY = os.getenv("DJANGO_SECRET_KEY")
+if not SECRET_KEY:
+    raise RuntimeError(
+        "DJANGO_SECRET_KEY is not set. Create a .env file in Project/AEMS/backend/ or set the environment variable."
+    )
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
