@@ -1,4 +1,4 @@
-Art Exhibition Management System (AEMS)
+# Art Exhibition Management System (AEMS)
 
 Project overview
 ----------------
